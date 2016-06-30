@@ -19,27 +19,27 @@ spl_autoload_register( function($class_name) {
     if ($class_name !== 'ACF') {
         $classes_dir = realpath( plugin_dir_path( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
         $class_file = str_replace( '\\', DIRECTORY_SEPARATOR, $class_name ) . '.php';
-        //might want to put a  file check 
-        require_once $classes_dir . $class_file;        
+        //might want to put a  file check
+        require_once $classes_dir . $class_file;
     }
 
-    
+
 });
 add_action( 'admin_notices', function(){
     ?>
     <div class="notice notice-success is-dismissible">
         <p><?php _e( Controller::loadedTest() , 'fg-find-a-distributor' ); ?></p>
     </div>
-  
-    <?php   
+
+    <?php
 });
 add_action( 'admin_notices', function(){
     ?>
     <div class="notice notice-success is-dismissible">
         <p><?php _e( Geocoder::loadedTest() , 'fg-find-a-distributor' ); ?></p>
     </div>
-  
-    <?php   
-}); 
+
+    <?php
+});
 
 ?>
