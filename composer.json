@@ -11,17 +11,17 @@
             "name" : "Shawn Turple",
             "email" : "shawn@turple.ca",
             "homepage" : "http://turple.ca",
-            "role" : "Developer"            
+            "role" : "Developer"
         },
         {
             "name" : "Robert Leahy",
-            "email" "rleahy@rleahy.ca",
+            "email" : "rleahy@rleahy.ca",
             "role" : "Developer"
         }
 
     ],
     "require": {
-        "php" : ">=5.4",        
-        "composer/installers": "~1.0",        
+        "php" : ">=5.4",
+        "composer/installers": "~1.0"
     }
 }
