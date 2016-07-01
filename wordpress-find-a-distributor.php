@@ -71,7 +71,10 @@ call_user_func(function () {
         $ci=$update($city);
         $t=$update($tu);
         $co=$update($country);
-        if (is_null($a) || is_null($ci) || is_null($co)) return;    //  TODO: Delete data in this case?
+        if (is_null($a) || is_null($ci) || is_null($co)) {
+            if ($wpdb->delete($table_name,['ID' => $id],['%d'])===false) throw new \RuntimeException('Failed deleting latitude and longitude');
+            return;
+        }
         $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
         $l=$geo->forward($a,$ci,$t,$co);
         if ($wpdb->replace(
