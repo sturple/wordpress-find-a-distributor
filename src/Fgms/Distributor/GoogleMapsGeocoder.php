@@ -34,7 +34,7 @@ class GoogleMapsGeocoder implements Geocoder
         return sprintf(
             'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s',
             rawurlencode($this->getAddress($address,$city,$territorial_unit,$country,$postal_code)),
-            $this->api_key
+            rawurlencode($this->api_key)
         );
     }
     private function raise($msg, $code=0)
