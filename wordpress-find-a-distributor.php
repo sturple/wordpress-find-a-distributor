@@ -22,6 +22,30 @@ call_user_func(function () {
     $mb=$prefix.'info';
     global $wpdb;
     $table_name=$wpdb->prefix.'fgms_distributor';
+    $del=function ($id) use ($wpdb,$table_name) {
+        $c=$wpdb->delete($table_name,['ID' => $id],['%d']);
+        if ($c===false) throw new \RuntimeException(
+            sprintf(
+                'Failed deleting latitude and longitude for post ID %d',
+                $id
+            )
+        );
+    };
+    $ins=function ($id, $lat, $lng) use ($wpdb,$table_name) {
+        $c=$wpdb->replace(
+            $table_name,
+            ['ID' => $id,'lat' => $lat,'lng' => $lng],
+            ['%d','%f','%f']
+        );
+        if ($c===false) throw new \RuntimeException(
+            sprintf(
+                'Failed inserting latitude (%f) and longitude (%f) for post ID %d',
+                $lat,
+                $lng,
+                $id
+            )
+        );
+    };
     add_action('init',function () use ($type,$prefix,$addr,$city,$tu,$country,$mb) {
         register_post_type($type,[
             'labels' => [
@@ -57,7 +81,7 @@ call_user_func(function () {
             }
         ]);
     });
-    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$wpdb,$table_name,$api_key) {
+    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$api_key,$del,$ins) {
         if ($post->post_type!==$type) return;
         if (!current_user_can(get_post_type_object($post->post_type)->cap->edit_post,$id)) return;
         $update=function ($key) use ($id) {
@@ -72,17 +96,18 @@ call_user_func(function () {
         $t=$update($tu);
         $co=$update($country);
         if (is_null($a) || is_null($ci) || is_null($co)) {
-            if ($wpdb->delete($table_name,['ID' => $id],['%d'])===false) throw new \RuntimeException('Failed deleting latitude and longitude');
+            $del($id);
             return;
         }
         $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
         $l=$geo->forward($a,$ci,$t,$co);
-        if ($wpdb->replace(
-            $table_name,
-            ['ID' => $id,'lat' => $l[0],'lng' => $l[1]],
-            ['%d','%f','%f']
-        )===false) throw new \RuntimeException('Failed inserting latitude and longitude');
+        $ins($id,$l[0],$l[1]);
     },10,2);
+    add_action('before_delete_post',function ($id) use ($type,$del) {
+        $post=get_post($id);
+        if ($post->post_type!=$type) return;
+        $del($id);
+    });
     $db_version='0.0.1';
     add_action('plugins_loaded',function () use ($db_version,$prefix,$table_name,$wpdb) {
         $opt=$prefix.'db-version';
