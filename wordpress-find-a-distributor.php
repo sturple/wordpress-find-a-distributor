@@ -12,6 +12,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 call_user_func(function () {
+    $api_key='';    //  TODO: Better solution for this
     $type='fgms-distributor';
     $prefix=$type.'-';
     $addr=$prefix.'address';
@@ -56,17 +57,28 @@ call_user_func(function () {
             }
         ]);
     });
-    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country) {
+    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$wpdb,$table_name,$api_key) {
         if ($post->post_type!==$type) return;
         if (!current_user_can(get_post_type_object($post->post_type)->cap->edit_post,$id)) return;
         $update=function ($key) use ($id) {
             $v=isset($_POST[$key]) ? $_POST[$key] : '';
-            update_post_meta($id,$key,$v);
+            $v=preg_replace('/^\\s+|\\s+$/u','',$v);
+            if ($v==='') $v=null;
+            update_post_meta($id,$key,is_null($v) ? '' : $v);
+            return $v;
         };
-        $update($addr);
-        $update($city);
-        $update($tu);
-        $update($country);
+        $a=$update($addr);
+        $ci=$update($city);
+        $t=$update($tu);
+        $co=$update($country);
+        if (is_null($a) || is_null($ci) || is_null($co)) return;    //  TODO: Delete data in this case?
+        $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
+        $l=$geo->forward($a,$ci,$t,$co);
+        if ($wpdb->replace(
+            $table_name,
+            ['ID' => $id,'lat' => $l[0],'lng' => $l[1]],
+            ['%d','%f','%f']
+        )===false) throw new \RuntimeException('Failed inserting latitude and longitude');
     },10,2);
     $db_version='0.0.1';
     add_action('plugins_loaded',function () use ($db_version,$prefix,$table_name,$wpdb) {
