@@ -59,13 +59,5 @@ add_action( 'admin_notices', function(){
 
     <?php
 });
-add_action( 'admin_notices', function(){
-    ?>
-    <div class="notice notice-success is-dismissible">
-        <p><?php _e( Geocoder::loadedTest() , 'fg-find-a-distributor' ); ?></p>
-    </div>
-
-    <?php
-});
 
 ?>
