@@ -25,6 +25,15 @@ spl_autoload_register( function($class_name) {
 
 
 });
+add_action('init',function () {
+    register_post_type('fgms-distributor',[
+        'labels' => [
+            'name' => __('Distributors'),
+            'singular_name' => __('Distributor')
+        ],
+        'public' => true
+    ]);
+});
 add_action( 'admin_notices', function(){
     ?>
     <div class="notice notice-success is-dismissible">
