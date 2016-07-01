@@ -13,8 +13,8 @@
 require __DIR__ . '/vendor/autoload.php';
 call_user_func(function () {
     $api_key='';    //  TODO: Better solution for this
-    $type='fgms-distributor';
-    $prefix=$type.'-';
+    $type='distributor';
+    $prefix='fgms-distributor-';
     $addr=$prefix.'address';
     $city=$prefix.'city';
     $tu=$prefix.'territorial-unit';
