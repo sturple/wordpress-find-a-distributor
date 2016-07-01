@@ -31,7 +31,24 @@ add_action('init',function () {
             'name' => __('Distributors'),
             'singular_name' => __('Distributor')
         ],
-        'public' => true
+        'public' => true,
+        'register_meta_box_cb' => function (\WP_Post $post) {
+            add_meta_box(
+                'fgms-distributor-info',
+                __('Distributor Information'),
+                function () {
+                    ?>
+                    <label for="fgms-distributor-address"><?php _e('Address'); ?></label>
+                    <br>
+                    <input class="widefat" type="text" name="fgms-distributor-address">
+                    <?php
+                },
+                null,
+                'normal',
+                'default',
+                null
+            );
+        }
     ]);
 });
 add_action( 'admin_notices', function(){
