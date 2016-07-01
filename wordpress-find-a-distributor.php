@@ -19,6 +19,8 @@ call_user_func(function () {
     $tu=$prefix.'territorial-unit';
     $country=$prefix.'country';
     $mb=$prefix.'info';
+    global $wpdb;
+    $table_name=$wpdb->prefix.'fgms_distributor';
     add_action('init',function () use ($type,$prefix,$addr,$city,$tu,$country,$mb) {
         register_post_type($type,[
             'labels' => [
@@ -66,6 +68,24 @@ call_user_func(function () {
         $update($tu);
         $update($country);
     },10,2);
+    $db_version='0.0.1';
+    add_action('plugins_loaded',function () use ($db_version,$prefix,$table_name,$wpdb) {
+        $opt=$prefix.'db-version';
+        if (get_option($opt)===$db_version) return;
+        require_once ABSPATH.'wp-admin/includes/upgrade.php';
+        $sql=sprintf(
+            'CREATE TABLE %s (
+                ID int(11) NOT NULL AUTO_INCREMENT,
+                lat double NOT NULL,
+                lng double NOT NULL,
+                PRIMARY KEY  (ID)
+            ) %s;',
+            $table_name,
+            $wpdb->get_charset_collate()
+        );
+        dbDelta($sql);
+        update_option($opt,$db_version);
+    });
 });
 
 ?>
