@@ -10,10 +10,6 @@
  */
 
 
-use Fgms\Distributor\Controller;
-use Fgms\Distributor\Geocoder;
-
-
 require __DIR__ . '/vendor/autoload.php';
 add_action('init',function () {
     register_post_type('fgms-distributor',[
@@ -40,14 +36,6 @@ add_action('init',function () {
             );
         }
     ]);
-});
-add_action( 'admin_notices', function(){
-    ?>
-    <div class="notice notice-success is-dismissible">
-        <p><?php _e( Controller::loadedTest() , 'fg-find-a-distributor' ); ?></p>
-    </div>
-
-    <?php
 });
 
 ?>
