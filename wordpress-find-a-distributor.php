@@ -37,6 +37,35 @@ call_user_func(function () {
         );
         $db_raise();
     };
+    $get_radius=function ($lat, $lng, $radius, $km=true) use ($wpdb,$table_name,$db_raise) {
+        $magic=$km ? 6371 : 3959;
+        $sql=sprintf(
+            'SELECT ID,
+            (%5$d * acos(
+                cos(
+                    radians(%2$f)
+                )*cos(
+                    radians(lat)
+                )*cos(
+                    radians(lng)-radians(%3$f)
+                )+sin(
+                    radians(%2$f)
+                )*sin(
+                    radians(lat)
+                )
+            )) AS distance
+            FROM %1$s
+            HAVING distance<%4$f',
+            $table_name,
+            $lat,
+            $lng,
+            $radius,
+            $magic
+        );
+        $objs=$wpdb->get_results($sql,OBJECT);
+        $db_raise();
+        foreach ($objs as $obj) yield [$obj->distance,get_post($obj->ID)];
+    };
     add_action('init',function () use ($type,$prefix,$addr,$city,$tu,$country,$mb) {
         register_post_type($type,[
             'labels' => [
