@@ -14,17 +14,7 @@ use Fgms\Distributor\Controller;
 use Fgms\Distributor\Geocoder;
 
 
-spl_autoload_register( function($class_name) {
-    // not sure why it is trying to find ACF.php ( i think this is advanced custom fields php)
-    if ($class_name !== 'ACF') {
-        $classes_dir = realpath( plugin_dir_path( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR;
-        $class_file = str_replace( '\\', DIRECTORY_SEPARATOR, $class_name ) . '.php';
-        //might want to put a  file check
-        require_once $classes_dir . $class_file;
-    }
-
-
-});
+require __DIR__ . '/vendor/autoload.php';
 add_action('init',function () {
     register_post_type('fgms-distributor',[
         'labels' => [
