@@ -22,29 +22,20 @@ call_user_func(function () {
     $mb=$prefix.'info';
     global $wpdb;
     $table_name=$wpdb->prefix.'fgms_distributor';
-    $del=function ($id) use ($wpdb,$table_name) {
-        $c=$wpdb->delete($table_name,['ID' => $id],['%d']);
-        if ($c===false) throw new \RuntimeException(
-            sprintf(
-                'Failed deleting latitude and longitude for post ID %d',
-                $id
-            )
-        );
+    $db_raise=function () use ($wpdb) {
+        if ($wpdb->last_error!=='') throw new \RuntimeException($wpdb->last_error);
     };
-    $ins=function ($id, $lat, $lng) use ($wpdb,$table_name) {
-        $c=$wpdb->replace(
+    $del=function ($id) use ($wpdb,$table_name,$db_raise) {
+        $wpdb->delete($table_name,['ID' => $id],['%d']);
+        $db_raise();
+    };
+    $ins=function ($id, $lat, $lng) use ($wpdb,$table_name,$db_raise) {
+        $wpdb->replace(
             $table_name,
             ['ID' => $id,'lat' => $lat,'lng' => $lng],
             ['%d','%f','%f']
         );
-        if ($c===false) throw new \RuntimeException(
-            sprintf(
-                'Failed inserting latitude (%f) and longitude (%f) for post ID %d',
-                $lat,
-                $lng,
-                $id
-            )
-        );
+        $db_raise();
     };
     add_action('init',function () use ($type,$prefix,$addr,$city,$tu,$country,$mb) {
         register_post_type($type,[
