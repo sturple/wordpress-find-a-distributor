@@ -8,6 +8,7 @@ class GoogleMapsGeocoder implements Geocoder
 {
     private $api_key;
     private $decode_depth=10;
+    private $client;
     /**
      *	Creates a new GoogleMapsGeocoder object which performs
      *	geocoding requests against the Google Maps API using
@@ -16,10 +17,16 @@ class GoogleMapsGeocoder implements Geocoder
      *	\param [in] $api_key
      *		The API key which shall be used to perform requests
      *		against the Google Maps API.
+     *  \param [in] $client
+     *      The GuzzleHttp\\Client object to be used to dispatch
+     *      HTTP requests.  Defaults to \em null in which case
+     *      a GuzzleHttp\\Client shall be default constructod.
      */
-    public function __construct ($api_key)
+    public function __construct ($api_key, \GuzzleHttp\Client $client=null)
     {
         $this->api_key=$api_key;
+        $this->client=$client;
+        if (is_null($this->client)) $this->client=new \GuzzleHttp\Client();
     }
     private function getAddress($address, $city, $territorial_unit, $country, $postal_code)
     {
@@ -50,8 +57,7 @@ class GoogleMapsGeocoder implements Geocoder
     }
     public function forward($address, $city, $territorial_unit, $country, $postal_code=null)
     {
-        $client=new \GuzzleHttp\Client();
-        $response=$client->request('GET',$this->getUrl($address,$city,$territorial_unit,$country,$postal_code));
+        $response=$this->client->request('GET',$this->getUrl($address,$city,$territorial_unit,$country,$postal_code));
         $code=$response->getStatusCode();
         if ($code!==200) $this->raise(sprintf('%s %s',$code,$response->getReasonPhrase()));
         $body=$response->getBody();
