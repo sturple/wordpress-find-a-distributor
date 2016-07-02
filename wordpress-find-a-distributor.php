@@ -40,7 +40,7 @@ call_user_func(function () {
     $get_radius=function ($lat, $lng, $radius, $km=true) use ($wpdb,$table_name,$db_raise) {
         $magic=$km ? 6371 : 3959;
         $sql=sprintf(
-            'SELECT ID,
+            'SELECT *,
             (%5$d * acos(
                 cos(
                     radians(%2$f)
@@ -64,7 +64,14 @@ call_user_func(function () {
         );
         $objs=$wpdb->get_results($sql,OBJECT);
         $db_raise();
-        foreach ($objs as $obj) yield [$obj->distance,get_post($obj->ID)];
+        $retr=[];
+        foreach ($objs as $obj) $retr[]=(object)[
+            'distance' => floatval($obj->distance),
+            'lat' => floatval($obj->lat),
+            'lng' => floatval($obj->lng),
+            'post' => get_post(intval($obj->ID))
+        ];
+        return $retr;
     };
     add_action('init',function () use ($type,$prefix,$addr,$city,$tu,$country,$mb) {
         register_post_type($type,[
