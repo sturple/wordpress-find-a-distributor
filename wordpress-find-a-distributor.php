@@ -22,6 +22,7 @@ call_user_func(function () {
     $mb=$prefix.'info';
     global $wpdb;
     $table_name=$wpdb->prefix.'fgms_distributor';
+    $ajax_action='fgms_distributor_radius';
     $db_raise=function () use ($wpdb) {
         if ($wpdb->last_error!=='') throw new \RuntimeException($wpdb->last_error);
     };
@@ -108,13 +109,26 @@ call_user_func(function () {
             }
         ]);
     });
-    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$api_key,$del,$ins) {
+    $get_superglobal=function ($key, $superglobal) {
+        $super=($superglobal==='POST') ? $_POST : $_GET;
+        if (!isset($super[$key])) return null;
+        $retr=$super[$key];
+        if (!is_string($retr)) throw new \RuntimeException(sprintf('%s value "%s" not a string',$superglobal,$key));
+        $retr=preg_replace('/^\\s+|\\s+$/u','',$retr);
+        if ($retr==='') return null;
+        return $retr;
+    };
+    $get_post=function ($key) use ($get_superglobal) {
+        return $get_superglobal($key,'POST');
+    };
+    $get_get=function ($key) use ($get_superglobal) {
+        return $get_superglobal($key,'GET');
+    };
+    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$api_key,$del,$ins,$get_post) {
         if ($post->post_type!==$type) return;
         if (!current_user_can(get_post_type_object($post->post_type)->cap->edit_post,$id)) return;
-        $update=function ($key) use ($id) {
-            $v=isset($_POST[$key]) ? $_POST[$key] : '';
-            $v=preg_replace('/^\\s+|\\s+$/u','',$v);
-            if ($v==='') $v=null;
+        $update=function ($key) use ($id,$get_post) {
+            $v=$get_post($key);
             update_post_meta($id,$key,is_null($v) ? '' : $v);
             return $v;
         };
@@ -135,6 +149,38 @@ call_user_func(function () {
         if ($post->post_type!=$type) return;
         $del($id);
     });
+    $ajax=function () use ($get_radius,$get_get,$addr,$city,$tu,$country) {
+        $get_get_float=function ($key) use ($get_get) {
+            $v=$get_get($key);
+            if (is_null($v)) throw new \RuntimeException(sprintf('No GET value "%s"',$key));
+            if (!is_numeric($v)) throw new \RuntimeException(sprintf('GET value "%s" is non-numeric string "%s"',$key,$v));
+            return floatval($v);
+        };
+        $radius=$get_get_float('radius');
+        $lng=$get_get_float('lng');
+        $lat=$get_get_float('lat');
+        $arr=[];
+        foreach ($get_radius($lat,$lng,$radius) as $obj) {
+            $post=$obj->post;
+            $id=$post->ID;
+            $arr[]=(object)[
+                'distance' => $obj->distance,
+                'lat' => $obj->lat,
+                'lng' => $obj->lng,
+                'address' => get_post_meta($id,$addr,true),
+                'city' => get_post_meta($id,$city,true),
+                'territorial_unit' => get_post_meta($id,$tu,true),
+                'country' => get_post_meta($id,$country,true),
+                'name' => $post->post_title,
+                'description' => $post->post_content
+            ];
+        }
+        header('Content-Type: application/json');
+        echo(json_encode($arr));
+        wp_die();
+    };
+    add_action('wp_ajax_'.$ajax_action,$ajax);
+    add_action('wp_ajax_nopriv_'.$ajax_action,$ajax);
     $db_version='0.0.1';
     add_action('plugins_loaded',function () use ($db_version,$prefix,$table_name,$wpdb) {
         $opt=$prefix.'db-version';
