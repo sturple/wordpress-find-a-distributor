@@ -51,7 +51,7 @@
 			}
 			var url=<?php	echo(json_encode(admin_url('admin-ajax.php')));	?>+query;
 			var xhr=$.ajax(url);
-			xhr.fail(function (xhr, text, e) {	alert(text);	});
+			xhr.fail(function (xhr, text, e) {	alert(xhr.statusText);	});
 			xhr.done(function (data, text, xhr) {
 				var arr=JSON.parse(xhr.responseText);
 				arr.sort(function (a, b) {	return a.dist-b.dist;	});
