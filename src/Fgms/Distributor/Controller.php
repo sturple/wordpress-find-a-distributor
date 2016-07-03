@@ -20,6 +20,8 @@ abstract class Controller
     private $country;
     private $meta_box_id;
 
+    private $save_action;
+
     private $table_name;
     private $ajax_action='fgms_distributor_radius';
     private $shortcode='find_a_distributor';
@@ -40,6 +42,7 @@ abstract class Controller
         $this->meta_box_id=$prefix.'info';
         $this->table_name=$wpdb->prefix.'fgms_distributor';
         $this->db_version_opt=$prefix.'db-version';
+        $this->save_action=$prefix.'save-post';
         //  WordPress setup/attach hooks
         $this->wp->add_action('init',[$this,'registerPostType']);
         $this->wp->add_action('save_post',function ($id, \WP_Post $post) {  $this->savePost($post); },10,2);
@@ -110,15 +113,35 @@ abstract class Controller
         $ci=$update($this->city);
         $t=$update($this->territorial_unit);
         $co=$update($this->country);
+        $obj=(object)[
+            'lat' => null,
+            'lng' => null,
+            'address' => $a,
+            'city' => $ci,
+            'territorial_unit' => $t,
+            'country' => $co
+        ];
         if (is_null($a) || is_null($ci) || is_null($co)) {
             $this->delete($id);
-            return;
+        } else {
+            $str=sprintf('%s, %s',$a,$ci);
+            if (!is_null($t)) $str=sprintf('%s, %s',$str,$t);
+            $str=sprintf('%s, %s',$str,$co);
+            $l=$this->geo->forward($str);
+            $lat=$l[0];
+            $lng=$l[1];
+            $this->insert($id,$lat,$lng);
+            $obj->lat=$lat;
+            $obj->lng=$lng;
         }
-        $str=sprintf('%s, %s',$a,$ci);
-        if (!is_null($t)) $str=sprintf('%s, %s',$str,$t);
-        $str=sprintf('%s, %s',$str,$co);
-        $l=$this->geo->forward($str);
-        $this->insert($id,$l[0],$l[1]);
+        $this->wp->do_action($this->save_action,$post,(object)[
+            'lat' => $lat,
+            'lng' => $lng,
+            'address' => $a,
+            'city' => $ci,
+            'territorial_unit' => $t,
+            'country' => $co
+        ]);
     }
 
     public function deletePost(\WP_Post $post)
