@@ -199,8 +199,14 @@ call_user_func(function () {
                 'description' => $post->post_content
             ];
         }
+        $result=(object)[
+            'lat' => $lat,
+            'lng' => $lng,
+            'radius' => $radius,
+            'results' => $arr
+        ];
         header('Content-Type: application/json');
-        echo(json_encode($arr));
+        echo(json_encode($result));
         wp_die();
     };
     add_action('wp_ajax_'.$ajax_action,$ajax);
