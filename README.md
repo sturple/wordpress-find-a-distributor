@@ -1,1 +1,1 @@
-# Wordpress plugin Find a Distributor
+# Wordpress Plugin: Find a Distributor
