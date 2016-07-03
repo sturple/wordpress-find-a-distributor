@@ -10,7 +10,19 @@
  */
 
 
-require __DIR__ . '/vendor/autoload.php';
+call_user_func(function () {
+    $rel='vendor/autoload.php';
+    $search=[__DIR__.'/',ABSPATH];
+    $where=null;
+    foreach ($search as $path) {
+        $w=$path.$rel;
+        if (!file_exists($w)) continue;
+        $where=$w;
+        break;
+    }
+    if (is_null($where)) throw new \RuntimeException('Could not find autoloader');
+    require $where;
+});
 call_user_func(function () {
     $api_key='';    //  TODO: Better solution for this
     $type='distributor';
