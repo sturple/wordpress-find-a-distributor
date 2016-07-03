@@ -32,7 +32,6 @@
 			xhr.fail(function (xhr, text, e) {	alert(xhr.statusText);	});
 			xhr.done(function (data, text, xhr) {
 				var arr=JSON.parse(xhr.responseText);
-				console.log(arr);
 				arr.sort(function (a, b) {	return a.dist-b.dist;	});
 				arr.forEach(function (dist) {
 					var e=document.createElement('div');
