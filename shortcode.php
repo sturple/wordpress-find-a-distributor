@@ -1,7 +1,14 @@
 <form class="find-a-distributor">
-	<input type="text" name="lat">
-	<input type="text" name="lng">
+	<label for="radius">Search Radius (km)</label>
 	<input type="text" name="radius">
+	<label for="address">Address</label>
+	<input type="text" name="address">
+	<label for="city">City</label>
+	<input type="text" name="city">
+	<label for="territorial_unit">State/Province</label>
+	<input type="text" name="territorial_unit">
+	<label for="country">Country</label>
+	<input type="text" name="country">
 	<input type="submit">
 </form>
 
@@ -13,19 +20,35 @@
 		var curr=$('script').last();
 		var form=curr.prevAll('form').first();
 		var found=curr.prevAll('div').first();
+		var get=function (name) {
+			var str=form.find('input[name="'+name+'"]').val().trim();
+			if (str==='') return null;
+			return str;
+		};
 		form.submit(function (e) {
 			e.preventDefault();
 			found.empty();
-			var lat=parseFloat(form.find('input[name="lat"]').val());
-			var lng=parseFloat(form.find('input[name="lng"]').val());
 			var radius=parseFloat(form.find('input[name="radius"]').val());
-			if (isNaN(lat) || isNaN(lng) || isNaN(radius) || (radius<=0)) return;
-			var query='?action=fgms_distributor_radius&lat=';
-			query+=encodeURIComponent(lat);
-			query+='&lng=';
-			query+=encodeURIComponent(lng);
+			if (isNaN(radius)) return;
+			var address=get('address');
+			if (address===null) return;
+			var city=get('city');
+			if (city===null) return;
+			var tu=get('territorial_unit');
+			var country=get('country');
+			if (country===null) return;
+			var query='?action=fgms_distributor_radius&address=';
+			query+=encodeURIComponent(address);
+			query+='&city=';
+			query+=encodeURIComponent(city);
 			query+='&radius=';
 			query+=encodeURIComponent(radius);
+			query+='&country=';
+			query+=encodeURIComponent(country);
+			if (tu!==null) {
+				query+='&territorial_unit=';
+				query+=encodeURIComponent(tu);
+			}
 			var url=<?php	echo(json_encode(admin_url('admin-ajax.php')));	?>+query;
 			var xhr=$.ajax(url);
 			xhr.fail(function (xhr, text, e) {	alert(text);	});

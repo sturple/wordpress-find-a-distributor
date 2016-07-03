@@ -24,6 +24,7 @@ call_user_func(function () {
     $table_name=$wpdb->prefix.'fgms_distributor';
     $ajax_action='fgms_distributor_radius';
     $shortcode='find_a_distributor';
+    $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
     $db_raise=function () use ($wpdb) {
         if ($wpdb->last_error!=='') throw new \RuntimeException($wpdb->last_error);
     };
@@ -125,7 +126,7 @@ call_user_func(function () {
     $get_get=function ($key) use ($get_superglobal) {
         return $get_superglobal($key,'GET');
     };
-    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$api_key,$del,$ins,$get_post) {
+    add_action('save_post',function ($id, \WP_Post $post) use ($type,$addr,$city,$tu,$country,$del,$ins,$get_post,$geo) {
         if ($post->post_type!==$type) return;
         if (!current_user_can(get_post_type_object($post->post_type)->cap->edit_post,$id)) return;
         $update=function ($key) use ($id,$get_post) {
@@ -141,7 +142,6 @@ call_user_func(function () {
             $del($id);
             return;
         }
-        $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
         $l=$geo->forward($a,$ci,$t,$co);
         $ins($id,$l[0],$l[1]);
     },10,2);
@@ -150,16 +150,29 @@ call_user_func(function () {
         if ($post->post_type!=$type) return;
         $del($id);
     });
-    $ajax=function () use ($get_radius,$get_get,$addr,$city,$tu,$country) {
+    $ajax=function () use ($get_radius,$get_get,$addr,$city,$tu,$country,$geo) {
         $get_get_float=function ($key) use ($get_get) {
             $v=$get_get($key);
-            if (is_null($v)) throw new \RuntimeException(sprintf('No GET value "%s"',$key));
+            if (is_null($v)) return null;
             if (!is_numeric($v)) throw new \RuntimeException(sprintf('GET value "%s" is non-numeric string "%s"',$key,$v));
             return floatval($v);
         };
         $radius=$get_get_float('radius');
         $lng=$get_get_float('lng');
         $lat=$get_get_float('lat');
+        if (is_null($lat)!==is_null($lng)) throw new \RuntimeException(sprintf('Only one of latitude or longitude given'));
+        if (is_null($lat)) {
+            $address=$get_get('address');
+            if (is_null($address)) throw new \RuntimeException('No address');
+            $city=$get_get('city');
+            if (is_null($city)) throw new \RuntimeException('No city');
+            $tu=$get_get('territorial_unit');
+            $country=$get_get('country');
+            if (is_null($country)) throw new \RuntimeException('No country');
+            $pair=$geo->forward($address,$city,$tu,$country);
+            $lat=$pair[0];
+            $lng=$pair[1];
+        }
         $arr=[];
         foreach ($get_radius($lat,$lng,$radius) as $obj) {
             $post=$obj->post;
