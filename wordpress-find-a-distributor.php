@@ -21,7 +21,7 @@ call_user_func(function () {
         break;
     }
     if (is_null($where)) throw new \RuntimeException('Could not find autoloader');
-    require $where;
+    require_once $where;
 });
 call_user_func(function () {
     $api_key='';    //  TODO: Better solution for this
