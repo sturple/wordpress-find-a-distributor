@@ -23,6 +23,7 @@ call_user_func(function () {
     global $wpdb;
     $table_name=$wpdb->prefix.'fgms_distributor';
     $ajax_action='fgms_distributor_radius';
+    $shortcode='find_a_distributor';
     $db_raise=function () use ($wpdb) {
         if ($wpdb->last_error!=='') throw new \RuntimeException($wpdb->last_error);
     };
@@ -198,6 +199,14 @@ call_user_func(function () {
         );
         dbDelta($sql);
         update_option($opt,$db_version);
+    });
+    add_shortcode('find_a_distributor',function () {
+        wp_enqueue_script('jquery');
+        ob_start();
+        require __DIR__.'/shortcode.php';
+        $retr=ob_get_contents();
+        ob_end_clean();
+        return $retr;
     });
 });
 
