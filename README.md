@@ -4,6 +4,10 @@
 
 This plugin adds a new post type to WordPress: Distributors.  Each post of this type represents a distributor which may be found through the plugin's other features.  The title of such a post is taken to be the name of the distributor-in-qusetion.  The body of such a post is taken to be a description of the distributor-in-question.  The edit page in the WordPress admin area for a distributor post allows users to enter metadata which allows the distributor to be geocoded (i.e. address, city, et cetera).
 
+## [find_a_distributor] Shortcode
+
+Placing `[find_a_distributor]` into any WordPress post causes the plugin to emit a widget which may be used to search a radius around a given geographical point for distributors.
+
 ## AJAX API
 
 This plugin provides an AJAX API (accessible through `/wp-admin/admin-ajax.php`) through which clients may search for distributors within a certain radius of a certain point.
