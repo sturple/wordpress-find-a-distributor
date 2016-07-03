@@ -176,12 +176,12 @@ call_user_func(function () {
         if (is_null($lat)) {
             $address=$get_get('address');
             if (is_null($address)) throw new \RuntimeException('No address');
-            $city=$get_get('city');
-            if (is_null($city)) throw new \RuntimeException('No city');
-            $tu=$get_get('territorial_unit');
-            $country=$get_get('country');
-            if (is_null($country)) throw new \RuntimeException('No country');
-            $pair=$geo->forward($address,$city,$tu,$country);
+            $ci=$get_get('city');
+            if (is_null($ci)) throw new \RuntimeException('No city');
+            $terr=$get_get('territorial_unit');
+            $co=$get_get('country');
+            if (is_null($co)) throw new \RuntimeException('No country');
+            $pair=$geo->forward($address,$ci,$terr,$co);
             $lat=$pair[0];
             $lng=$pair[1];
         }
