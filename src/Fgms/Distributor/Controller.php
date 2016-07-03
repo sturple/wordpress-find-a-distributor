@@ -106,10 +106,10 @@ abstract class Controller
             update_post_meta($id,$key,is_null($v) ? '' : $v);
             return $v;
         };
-        $a=$update($addr);
-        $ci=$update($city);
-        $t=$update($tu);
-        $co=$update($country);
+        $a=$update($this->address);
+        $ci=$update($this->city);
+        $t=$update($this->territorial_unit);
+        $co=$update($this->country);
         if (is_null($a) || is_null($ci) || is_null($co)) {
             $this->delete($id);
             return;
