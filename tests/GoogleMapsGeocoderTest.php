@@ -22,7 +22,7 @@ class GoogleMapsGeocoderTest extends \PHPUnit\Framework\TestCase
     }
     private function forward()
     {
-        return $this->geo->forward('foo','bar',null,'baz');
+        return $this->geo->forward('foo');
     }
     private function assertPair($pair, $lat, $lng)
     {

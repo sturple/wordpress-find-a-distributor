@@ -28,19 +28,11 @@ class GoogleMapsGeocoder implements Geocoder
         $this->client=$client;
         if (is_null($this->client)) $this->client=new \GuzzleHttp\Client();
     }
-    private function getAddress($address, $city, $territorial_unit, $country, $postal_code)
-    {
-        $retr=sprintf('%s, %s',$address,$city);
-        if (!is_null($territorial_unit)) $retr=sprintf('%s, %s',$retr,$territorial_unit);
-        $retr=sprintf('%s, %s',$retr,$country);
-        if (!is_null($postal_code)) $retr=sprintf('%s, %s',$retr,$postal_code);
-        return $retr;
-    }
-    private function getUrl($address, $city, $territorial_unit, $country, $postal_code)
+    private function getUrl($address)
     {
         return sprintf(
             'https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s',
-            rawurlencode($this->getAddress($address,$city,$territorial_unit,$country,$postal_code)),
+            rawurlencode($address),
             rawurlencode($this->api_key)
         );
     }
@@ -55,9 +47,9 @@ class GoogleMapsGeocoder implements Geocoder
             json_last_error()
         );
     }
-    public function forward($address, $city, $territorial_unit, $country, $postal_code=null)
+    public function forward($address)
     {
-        $response=$this->client->request('GET',$this->getUrl($address,$city,$territorial_unit,$country,$postal_code));
+        $response=$this->client->request('GET',$this->getUrl($address));
         $code=$response->getStatusCode();
         if ($code!==200) $this->raise(sprintf('%s %s',$code,$response->getReasonPhrase()));
         $body=$response->getBody();

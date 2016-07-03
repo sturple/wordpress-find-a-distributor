@@ -1,14 +1,8 @@
 <form class="find-a-distributor">
 	<label for="radius">Search Radius (km)</label>
 	<input type="text" name="radius">
-	<label for="address">Address</label>
+	<label for="address">Zip/Postal Code, Address, or City</label>
 	<input type="text" name="address">
-	<label for="city">City</label>
-	<input type="text" name="city">
-	<label for="territorial_unit">State/Province</label>
-	<input type="text" name="territorial_unit">
-	<label for="country">Country</label>
-	<input type="text" name="country">
 	<input type="submit">
 </form>
 
@@ -32,28 +26,13 @@
 			if (isNaN(radius)) return;
 			var address=get('address');
 			if (address===null) return;
-			var city=get('city');
-			if (city===null) return;
-			var tu=get('territorial_unit');
-			var country=get('country');
-			if (country===null) return;
-			var query='?action=fgms_distributor_radius&address=';
-			query+=encodeURIComponent(address);
-			query+='&city=';
-			query+=encodeURIComponent(city);
-			query+='&radius=';
-			query+=encodeURIComponent(radius);
-			query+='&country=';
-			query+=encodeURIComponent(country);
-			if (tu!==null) {
-				query+='&territorial_unit=';
-				query+=encodeURIComponent(tu);
-			}
+			var query='?action=fgms_distributor_radius&address='+encodeURIComponent(address)+'&radius='+encodeURIComponent(radius);
 			var url=<?php	echo(json_encode(admin_url('admin-ajax.php')));	?>+query;
 			var xhr=$.ajax(url);
 			xhr.fail(function (xhr, text, e) {	alert(xhr.statusText);	});
 			xhr.done(function (data, text, xhr) {
 				var arr=JSON.parse(xhr.responseText);
+				console.log(arr);
 				arr.sort(function (a, b) {	return a.dist-b.dist;	});
 				arr.forEach(function (dist) {
 					var e=document.createElement('div');

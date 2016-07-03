@@ -154,7 +154,10 @@ call_user_func(function () {
             $del($id);
             return;
         }
-        $l=$geo->forward($a,$ci,$t,$co);
+        $str=sprintf('%s, %s',$a,$ci);
+        if (!is_null($t)) $str=sprintf('%s, %s',$str,$t);
+        $str=sprintf('%s, %s',$str,$co);
+        $l=$geo->forward($str);
         $ins($id,$l[0],$l[1]);
     },10,2);
     add_action('before_delete_post',function ($id) use ($type,$del) {
@@ -176,12 +179,7 @@ call_user_func(function () {
         if (is_null($lat)) {
             $address=$get_get('address');
             if (is_null($address)) throw new \RuntimeException('No address');
-            $ci=$get_get('city');
-            if (is_null($ci)) throw new \RuntimeException('No city');
-            $terr=$get_get('territorial_unit');
-            $co=$get_get('country');
-            if (is_null($co)) throw new \RuntimeException('No country');
-            $pair=$geo->forward($address,$ci,$terr,$co);
+            $pair=$geo->forward($address);
             $lat=$pair[0];
             $lng=$pair[1];
         }
