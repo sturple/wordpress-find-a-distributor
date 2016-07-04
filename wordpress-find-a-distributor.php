@@ -25,9 +25,12 @@ call_user_func(function () {
 });
 call_user_func(function () {
     global $wpdb;
-    $api_key='';    //  TODO: Better solution for this
-    $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
-    $controller=new \Fgms\Distributor\ControllerImpl(new \Fgms\Distributor\WordPressImpl(),$wpdb,$geo);
+    $prefix='fgms-distributor-';
+    $domain='fgms-distributor';
+    $wp=new \Fgms\Distributor\WordPressImpl();
+    $settings=new \Fgms\Distributor\SettingsImpl($wp,$prefix,$domain);
+    $geo=new \Fgms\Distributor\GoogleMapsGeocoder($settings->getApiKey());
+    $controller=new \Fgms\Distributor\ControllerImpl($wp,$wpdb,$geo,$prefix,$domain);
     add_filter('fgms-distributor-shortcode-filter',function ($str) {
         if ($str!=='') return $str;
         wp_enqueue_script('jquery');
