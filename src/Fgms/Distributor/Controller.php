@@ -175,14 +175,7 @@ abstract class Controller
             $obj->lat=$lat;
             $obj->lng=$lng;
         }
-        $this->wp->do_action($this->save_action,$post,(object)[
-            'lat' => $lat,
-            'lng' => $lng,
-            'address' => $a,
-            'city' => $ci,
-            'territorial_unit' => $t,
-            'country' => $co
-        ]);
+        $this->wp->do_action($this->save_action,$post,$obj);
     }
 
     public function deletePost(\WP_Post $post)
