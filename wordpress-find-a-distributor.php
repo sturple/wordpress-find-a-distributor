@@ -37,6 +37,17 @@ call_user_func(function () {
         ob_end_clean();
         return $retr;
     });
+    add_filter('fgms-distributor-distributor-filter',function ($str, \WP_Post $post, $obj) {
+        if ($str!=='') return $str;
+        unset($str);
+        extract((array)$obj);
+        unset($obj);
+        ob_start();
+        require __DIR__.'/distributor.php';
+        $retr=ob_get_contents();
+        ob_end_clean();
+        return $retr;
+    },10,3);
 });
 
 ?>

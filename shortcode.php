@@ -37,25 +37,7 @@
 				arr.forEach(function (dist) {
 					var e=document.createElement('div');
 					e.setAttribute('class','found-distributor');
-					var h=document.createElement('h3');
-					h.setAttribute('class','found-distributor-name');
-					h.appendChild(document.createTextNode(dist.name));
-					e.appendChild(h);
-					var addr=document.createElement('div');
-					addr.setAttribute('class','found-distributor-address');
-					addr.appendChild(document.createTextNode(dist.address));
-					addr.appendChild(document.createElement('br'));
-					addr.appendChild(document.createTextNode(dist.city+(dist.territorial_unit ? ', '+dist.territorial_unit : '')));
-					addr.appendChild(document.createElement('br'));
-					addr.appendChild(document.createTextNode(dist.country));
-					e.appendChild(addr);
-					dist.description=dist.description.trim();
-					if (dist.description) {
-						var desc=document.createElement('div');
-						desc.setAttribute('class','found-distributor-description');
-						desc.appendChild(document.createTextNode(dist.description));
-						e.appendChild(desc);
-					}
+					e.innerHTML=dist.html;
 					found[0].appendChild(e);
 				});
 			});

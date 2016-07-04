@@ -22,6 +22,7 @@ abstract class Controller
 
     private $save_action;
     private $shortcode_filter;
+    private $distributor_filter;
 
     private $table_name;
     private $ajax_action='fgms_distributor_radius';
@@ -45,6 +46,7 @@ abstract class Controller
         $this->db_version_opt=$prefix.'db-version';
         $this->save_action=$prefix.'save-post';
         $this->shortcode_filter=$prefix.'shortcode-filter';
+        $this->distributor_filter=$prefix.'distributor-filter';
         //  WordPress setup/attach hooks
         $this->wp->add_action('init',[$this,'registerPostType']);
         $this->wp->add_action('save_post',function ($id, \WP_Post $post) {  $this->savePost($post); },10,2);
@@ -173,21 +175,7 @@ abstract class Controller
             $lng=$pair[1];
         }
         $arr=[];
-        foreach ($this->getRadius($lat,$lng,$radius) as $obj) {
-            $post=$obj->post;
-            $id=$post->ID;
-            $arr[]=(object)[
-                'distance' => $obj->distance,
-                'lat' => $obj->lat,
-                'lng' => $obj->lng,
-                'address' => get_post_meta($id,$this->address,true),
-                'city' => get_post_meta($id,$this->city,true),
-                'territorial_unit' => get_post_meta($id,$this->territorial_unit,true),
-                'country' => get_post_meta($id,$this->country,true),
-                'name' => $post->post_title,
-                'description' => $post->post_content
-            ];
-        }
+        foreach ($this->getRadius($lat,$lng,$radius) as $obj) $arr[]=$this->getAjaxResponse($obj);
         $result=(object)[
             'lat' => $lat,
             'lng' => $lng,
@@ -278,6 +266,27 @@ abstract class Controller
             'post' => get_post(intval($obj->ID))
         ];
         return $retr;
+    }
+
+    private function getAjaxResponse($obj)
+    {
+        $post=$obj->post;
+        $id=$post->ID;
+        $obj=(object)[
+            'distance' => $obj->distance,
+            'lat' => $obj->lat,
+            'lng' => $obj->lng,
+            'address' => get_post_meta($id,$this->address,true),
+            'city' => get_post_meta($id,$this->city,true),
+            'territorial_unit' => get_post_meta($id,$this->territorial_unit,true),
+            'country' => get_post_meta($id,$this->country,true),
+        ];
+        $obj->html=$this->wp->apply_filters($this->distributor_filter,'',$post,clone $obj);
+        $obj->html=preg_replace('/^\\s+|\\s+$/u','',$obj->html);
+        if ($obj->html==='') $obj->html=null;
+        $obj->name=$post->post_title;
+        $obj->description=$post->post_content;
+        return $obj;
     }
 
     /**
