@@ -33,7 +33,7 @@
 			xhr.done(function (data, text, xhr) {
 				var obj=JSON.parse(xhr.responseText);
 				var arr=obj.results;
-				arr.sort(function (a, b) {	return a.dist-b.dist;	});
+				arr.sort(function (a, b) {	return a.distance-b.distance;	});
 				arr.forEach(function (dist) {
 					var e=document.createElement('div');
 					e.setAttribute('class','found-distributor');
