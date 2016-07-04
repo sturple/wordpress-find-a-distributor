@@ -276,10 +276,10 @@ abstract class Controller
             'distance' => $obj->distance,
             'lat' => $obj->lat,
             'lng' => $obj->lng,
-            'address' => get_post_meta($id,$this->address,true),
-            'city' => get_post_meta($id,$this->city,true),
-            'territorial_unit' => get_post_meta($id,$this->territorial_unit,true),
-            'country' => get_post_meta($id,$this->country,true),
+            'address' => $this->wp->get_post_meta($id,$this->address,true),
+            'city' => $this->wp->get_post_meta($id,$this->city,true),
+            'territorial_unit' => $this->wp->get_post_meta($id,$this->territorial_unit,true),
+            'country' => $this->wp->get_post_meta($id,$this->country,true)
         ];
         $obj->html=$this->wp->apply_filters($this->distributor_filter,'',$post,clone $obj);
         $obj->html=preg_replace('/^\\s+|\\s+$/u','',$obj->html);
