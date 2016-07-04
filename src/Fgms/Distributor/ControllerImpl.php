@@ -3,12 +3,12 @@ namespace Fgms\Distributor;
 
 class ControllerImpl extends Controller
 {
-	public function output($str)
+	protected function output($str)
 	{
 		echo($str);
 	}
 	
-	public function header($header)
+	protected function header($header)
 	{
 		header($header);
 	}
@@ -23,12 +23,12 @@ class ControllerImpl extends Controller
 		return $v;
 	}
 
-	public function get($key, $default=null)
+	protected function get($key, $default=null)
 	{
 		return $this->superglobal($key,$default,true);
 	}
 
-	public function post($key, $default=null)
+	protected function post($key, $default=null)
 	{
 		return $this->superglobal($key,$default,false);
 	}

@@ -296,7 +296,7 @@ abstract class Controller
      *  \param [in] $str
      *      The string to output.
      */
-    abstract public function output($str);
+    abstract protected function output($str);
 
     /**
      *  When implemented in a derived class sets a header
@@ -305,7 +305,7 @@ abstract class Controller
      *  \param [in] $header
      *      The header to set.
      */
-    abstract public function header($header);
+    abstract protected function header($header);
 
     /**
      *  When implemented in a derived class retrieves
@@ -324,7 +324,7 @@ abstract class Controller
      *      The value associated with \em key or \em default
      *      if there is no value associated with \em key.
      */
-    abstract public function get($key, $default=null);
+    abstract protected function get($key, $default=null);
 
     /**
      *  When implemented in a derived class retrieves
@@ -343,5 +343,5 @@ abstract class Controller
      *      The value associated with \em key or \em default
      *      if there is no value associated with \em key.
      */
-    abstract public function post($key, $default=null);
+    abstract protected function post($key, $default=null);
 }
