@@ -21,6 +21,7 @@ abstract class Controller
     private $meta_box_id;
 
     private $save_action;
+    private $shortcode_filter;
 
     private $table_name;
     private $ajax_action='fgms_distributor_radius';
@@ -43,6 +44,7 @@ abstract class Controller
         $this->table_name=$wpdb->prefix.'fgms_distributor';
         $this->db_version_opt=$prefix.'db-version';
         $this->save_action=$prefix.'save-post';
+        $this->shortcode_filter=$prefix.'shortcode-filter';
         //  WordPress setup/attach hooks
         $this->wp->add_action('init',[$this,'registerPostType']);
         $this->wp->add_action('save_post',function ($id, \WP_Post $post) {  $this->savePost($post); },10,2);
@@ -216,13 +218,7 @@ abstract class Controller
 
     public function shortcode()
     {
-        //  TODO: Overhaul this
-        $this->wp->wp_enqueue_script('jquery');
-        ob_start();
-        require __DIR__.'/../../../shortcode.php';
-        $retr=ob_get_contents();
-        ob_end_clean();
-        return $retr;
+        return $this->wp->apply_filters($this->shortcode_filter,'');
     }
 
     private function dbRaise()

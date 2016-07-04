@@ -28,6 +28,15 @@ call_user_func(function () {
     $api_key='';    //  TODO: Better solution for this
     $geo=new \Fgms\Distributor\GoogleMapsGeocoder($api_key);
     $controller=new \Fgms\Distributor\ControllerImpl(new \Fgms\Distributor\WordPressImpl(),$wpdb,$geo);
+    add_filter('fgms-distributor-shortcode-filter',function ($str) {
+        if ($str!=='') return $str;
+        wp_enqueue_script('jquery');
+        ob_start();
+        require __DIR__.'/shortcode.php';
+        $retr=ob_get_contents();
+        ob_end_clean();
+        return $retr;
+    });
 });
 
 ?>
