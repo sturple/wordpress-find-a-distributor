@@ -18,7 +18,13 @@ abstract class Controller
     private $city;
     private $territorial_unit;
     private $country;
-    private $meta_box_id;
+    private $postal_code;
+    private $first_name;
+    private $last_name;
+    private $phone;
+    private $email;
+    private $contact_meta_box_id;
+    private $address_meta_box_id;
 
     private $save_action;
     private $shortcode_filter;
@@ -41,7 +47,13 @@ abstract class Controller
         $this->city=$prefix.'city';
         $this->territorial_unit=$prefix.'territorial-unit';
         $this->country=$prefix.'country';
-        $this->meta_box_id=$prefix.'info';
+        $this->postal_code=$prefix.'postal-code';
+        $this->first_name=$prefix.'first-name';
+        $this->last_name=$prefix.'last-name';
+        $this->phone=$prefix.'phone';
+        $this->email=$prefix.'email';
+        $this->contact_meta_box_id=$prefix.'contact-meta-box';
+        $this->address_meta_box_id=$prefix.'address-meta-box';
         $this->table_name=$wpdb->prefix.'fgms_distributor';
         $this->db_version_opt=$prefix.'db-version';
         $this->save_action=$prefix.'save-post';
@@ -73,9 +85,18 @@ abstract class Controller
     public function registerMetaBox(\WP_Post $post)
     {
         $this->wp->add_meta_box(
-            $this->meta_box_id,
-            $this->wp->__('Distributor Information',$this->domain),
-            function () use ($post) {   $this->outputMetaBox($post);    },
+            $this->contact_meta_box_id,
+            $this->wp->__('Contact',$this->domain),
+            function () use ($post) {   $this->outputContactMetaBox($post); },
+            null,
+            'normal',
+            'default',
+            null
+        );
+        $this->wp->add_meta_box(
+            $this->address_meta_box_id,
+            $this->wp->__('Address',$this->domain),
+            function () use ($post) {   $this->outputAddressMetaBox($post);    },
             null,
             'normal',
             'default',
@@ -83,25 +104,33 @@ abstract class Controller
         );
     }
 
-    public function outputMetaBox(\WP_Post $post)
+    private function metaBoxOutput($name, $title, \WP_Post $post)
     {
-        $first=true;
-        $make=function ($name, $title) use (&$first, $post) {
-            if ($first) $first=false;
-            else $this->output('<br>');
-            $this->output(
-                sprintf(
-                    '<label for="%1$s">%2$s</label><br><input class="widefat" type="text" name="%1$s" id="%1$s" value="%3$s">',
-                    $this->wp->esc_attr($name),
-                    htmlspecialchars($title),
-                    $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true))
-                )
-            );
-        };
-        $make($this->address,'Address');
-        $make($this->city,'City');
-        $make($this->territorial_unit,'State/Province');
-        $make($this->country,'Country');
+        $this->output(
+            sprintf(
+                '<label for="%1$s">%2$s</label><br><input class="widefat" type="text" name="%1$s" id="%1$s" value="%3$s"><br>',
+                $this->wp->esc_attr($name),
+                htmlspecialchars($title),
+                $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true))
+            )
+        );
+    }
+
+    public function outputAddressMetaBox(\WP_Post $post)
+    {
+        $this->metaBoxOutput($this->address,'Address',$post);
+        $this->metaBoxOutput($this->city,'City',$post);
+        $this->metaBoxOutput($this->territorial_unit,'State/Province',$post);
+        $this->metaBoxOutput($this->country,'Country',$post);
+        $this->metaBoxOutput($this->postal_code,'Postal/Zip Code',$post);
+    }
+
+    public function outputContactMetaBox(\WP_Post $post)
+    {
+        $this->metaBoxOutput($this->first_name,'First Name',$post);
+        $this->metaBoxOutput($this->last_name,'Last Name',$post);
+        $this->metaBoxOutput($this->phone,'Phone Number',$post);
+        $this->metaBoxOutput($this->email,'E-Mail',$post);
     }
 
     public function savePost(\WP_Post $post)
@@ -117,13 +146,21 @@ abstract class Controller
         $ci=$update($this->city);
         $t=$update($this->territorial_unit);
         $co=$update($this->country);
+        $fname=$update($this->first_name);
+        $lname=$update($this->last_name);
+        $phone=$update($this->phone);
+        $email=$update($this->email);
         $obj=(object)[
             'lat' => null,
             'lng' => null,
             'address' => $a,
             'city' => $ci,
             'territorial_unit' => $t,
-            'country' => $co
+            'country' => $co,
+            'first_name' => $fname,
+            'last_name' => $lname,
+            'phone' => $phone,
+            'email' => $email
         ];
         if (is_null($a) || is_null($ci) || is_null($co)) {
             $this->delete($id);
@@ -279,7 +316,11 @@ abstract class Controller
             'address' => $this->wp->get_post_meta($id,$this->address,true),
             'city' => $this->wp->get_post_meta($id,$this->city,true),
             'territorial_unit' => $this->wp->get_post_meta($id,$this->territorial_unit,true),
-            'country' => $this->wp->get_post_meta($id,$this->country,true)
+            'country' => $this->wp->get_post_meta($id,$this->country,true),
+            'first_name' => $this->wp->get_post_meta($id,$this->first_name,true),
+            'last_name' => $this->wp->get_post_meta($id,$this->last_name,true),
+            'phone' => $this->wp->get_post_meta($id,$this->phone,true),
+            'email' => $this->wp->get_post_meta($id,$this->email,true)
         ];
         $obj->html=$this->wp->apply_filters($this->distributor_filter,'',$post,clone $obj);
         $obj->html=preg_replace('/^\\s+|\\s+$/u','',$obj->html);
