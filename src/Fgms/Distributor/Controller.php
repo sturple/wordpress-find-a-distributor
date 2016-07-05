@@ -23,6 +23,7 @@ abstract class Controller
     private $last_name;
     private $phone;
     private $email;
+    private $website;
     private $contact_meta_box_id;
     private $address_meta_box_id;
 
@@ -52,6 +53,7 @@ abstract class Controller
         $this->last_name=$prefix.'last-name';
         $this->phone=$prefix.'phone';
         $this->email=$prefix.'email';
+        $this->website=$prefix.'website';
         $this->contact_meta_box_id=$prefix.'contact-meta-box';
         $this->address_meta_box_id=$prefix.'address-meta-box';
         $this->table_name=$wpdb->prefix.'fgms_distributor';
@@ -131,6 +133,7 @@ abstract class Controller
         $this->metaBoxOutput($this->last_name,'Last Name',$post);
         $this->metaBoxOutput($this->phone,'Phone Number',$post);
         $this->metaBoxOutput($this->email,'E-Mail',$post);
+        $this->metaBoxOutput($this->website,'Website',$post);
     }
 
     public function savePost(\WP_Post $post)
@@ -142,32 +145,25 @@ abstract class Controller
             update_post_meta($id,$key,is_null($v) ? '' : $v);
             return $v;
         };
-        $a=$update($this->address);
-        $ci=$update($this->city);
-        $t=$update($this->territorial_unit);
-        $co=$update($this->country);
-        $fname=$update($this->first_name);
-        $lname=$update($this->last_name);
-        $phone=$update($this->phone);
-        $email=$update($this->email);
         $obj=(object)[
             'lat' => null,
             'lng' => null,
-            'address' => $a,
-            'city' => $ci,
-            'territorial_unit' => $t,
-            'country' => $co,
-            'first_name' => $fname,
-            'last_name' => $lname,
-            'phone' => $phone,
-            'email' => $email
+            'address' => $update($this->address),
+            'city' => $update($this->city),
+            'territorial_unit' => $update($this->territorial_unit),
+            'country' => $update($this->country),
+            'first_name' => $update($this->first_name),
+            'last_name' => $update($this->last_name),
+            'phone' => $update($this->phone),
+            'email' => $update($this->email),
+            'website' => $update($this->website)
         ];
-        if (is_null($a) || is_null($ci) || is_null($co)) {
+        if (is_null($obj->address) || is_null($obj->city) || is_null($obj->country)) {
             $this->delete($id);
         } else {
-            $str=sprintf('%s, %s',$a,$ci);
-            if (!is_null($t)) $str=sprintf('%s, %s',$str,$t);
-            $str=sprintf('%s, %s',$str,$co);
+            $str=sprintf('%s, %s',$obj->address,$obj->city);
+            if (!is_null($obj->territorial_unit)) $str=sprintf('%s, %s',$str,$obj->territorial_unit);
+            $str=sprintf('%s, %s',$str,$obj->country);
             $l=$this->geo->forward($str);
             $lat=$l[0];
             $lng=$l[1];
@@ -313,7 +309,8 @@ abstract class Controller
             'first_name' => $this->wp->get_post_meta($id,$this->first_name,true),
             'last_name' => $this->wp->get_post_meta($id,$this->last_name,true),
             'phone' => $this->wp->get_post_meta($id,$this->phone,true),
-            'email' => $this->wp->get_post_meta($id,$this->email,true)
+            'email' => $this->wp->get_post_meta($id,$this->email,true),
+            'website' => $this->wp->get_post_meta($id,$this->website,true)
         ];
         $obj->html=$this->wp->apply_filters($this->distributor_filter,'',$post,clone $obj);
         $obj->html=preg_replace('/^\\s+|\\s+$/u','',$obj->html);
