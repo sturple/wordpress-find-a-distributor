@@ -227,7 +227,7 @@ abstract class Controller
             $this->wpdb->get_charset_collate()
         );
         $this->wp->dbDelta($sql);
-        $this->wp->update_option($opt,$db_version);
+        $this->wp->update_option($this->db_version_opt,$this->db_version);
     }
 
     public function shortcode()
