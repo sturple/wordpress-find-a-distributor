@@ -31,7 +31,8 @@ call_user_func(function () {
     $settings=new \Fgms\Distributor\SettingsImpl($wp,$prefix,$domain);
     $geo=new \Fgms\Distributor\GoogleMapsGeocoder($settings->getApiKey());
     $controller=new \Fgms\Distributor\ControllerImpl($wp,$wpdb,$geo,$prefix,$domain);
-    add_filter('fgms-distributor-shortcode-filter',function ($str) {
+    $output_maps=true;
+    add_filter('fgms-distributor-shortcode-filter',function ($str) use (&$output_maps) {
         if ($str!=='') return $str;
         wp_enqueue_script('jquery');
         ob_start();
