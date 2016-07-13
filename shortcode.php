@@ -35,14 +35,28 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			return str;
 		};
 		var markers=[];
+		var info_windows=[];
+		var close_windows=function () {	info_windows.forEach(function (iw) {	iw.close();	});	};
 		var add_distributor=function (dist) {
+			var pos=new google.maps.LatLng(dist.lat,dist.lng);
 			var marker=new MarkerWithLabel({
-				position: new google.maps.LatLng(dist.lat,dist.lng),
+				position: pos,
 				draggable: false,
 				map: map,
 				raiseOnDrag: false
 			});
 			markers.push(marker);
+			var info_window=new google.maps.InfoWindow({
+				//	TODO: Change this?
+				content: dist.html,
+				disableAutoPan: false,
+				position: pos
+			});
+			info_windows.push(info_window);
+			google.maps.event.addListener(marker,'click',function () {
+				close_windows();
+				info_window.open(map);
+			});
 			var e=document.createElement('div');
 			e.setAttribute('class','found-distributor');
 			e.innerHTML=dist.html;
@@ -59,6 +73,8 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			found.empty();
 			markers.forEach(function (marker) {	marker.setMap(null);	});
 			markers=[];
+			close_windows();
+			info_windows=[];
 			var radius=parseFloat(form.find('input[name="radius"]').val());
 			if (isNaN(radius)) return;
 			var address=get('address');
