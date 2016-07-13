@@ -6,7 +6,7 @@
 	<input type="submit">
 </form>
 
-<div class="found-distributors"></div>
+<ul class="found-distributors"></ul>
 
 <div class="found-distributors-map" style="height:800px;"></div>
 
@@ -22,7 +22,7 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 		var $=jQuery;
 		var curr=$('script').last();
 		var form=curr.prevAll('form.find-a-distributor').first();
-		var found=curr.prevAll('div.found-distributors').first();
+		var found=curr.prevAll('ul.found-distributors').first();
 		var map_container=curr.prevAll('div.found-distributors-map').first();
 		var map=new google.maps.Map(map_container[0],{
 			zoom: 3,
@@ -59,7 +59,7 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 				info_window.open(map);
 			};
 			google.maps.event.addListener(marker,'click',open);
-			var e=document.createElement('div');
+			var e=document.createElement('li');
 			e.setAttribute('class','found-distributor');
 			e.innerHTML=dist.html;
 			found[0].appendChild(e);
