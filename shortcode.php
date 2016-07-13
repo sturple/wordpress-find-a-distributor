@@ -49,18 +49,21 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			var info_window=new google.maps.InfoWindow({
 				//	TODO: Change this?
 				content: dist.html,
-				disableAutoPan: false,
+				disableAutoPan: true,
 				position: pos
 			});
 			info_windows.push(info_window);
-			google.maps.event.addListener(marker,'click',function () {
+			var open=function () {
 				close_windows();
+				map.setCenter(pos);
 				info_window.open(map);
-			});
+			};
+			google.maps.event.addListener(marker,'click',open);
 			var e=document.createElement('div');
 			e.setAttribute('class','found-distributor');
 			e.innerHTML=dist.html;
 			found[0].appendChild(e);
+			$(e).click(open);
 		};
 		var update=function (obj) {
 			map.setCenter(new google.maps.LatLng(obj.lat,obj.lng));
