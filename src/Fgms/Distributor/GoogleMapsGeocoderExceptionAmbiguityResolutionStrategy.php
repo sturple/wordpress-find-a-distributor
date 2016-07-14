@@ -9,12 +9,12 @@ namespace Fgms\Distributor;
  */
 class GoogleMapsGeocoderExceptionAmbiguityResolutionStrategy implements GoogleMapsGeocoderAmbiguityResolutionStrategy
 {
-	public function resolve(array $arr) {
-		throw new GoogleMapsGeocoderException(
-			sprintf(
-				'Ambiguous: %s',
-				json_encode($arr,JSON_PRETTY_PRINT)
-			)
-		);
-	}
+    public function resolve(array $arr) {
+        throw new GoogleMapsGeocoderException(
+            sprintf(
+                'Ambiguous: %s',
+                json_encode($arr,JSON_PRETTY_PRINT)
+            )
+        );
+    }
 }

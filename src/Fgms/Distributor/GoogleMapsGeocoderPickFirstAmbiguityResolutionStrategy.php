@@ -9,9 +9,9 @@ namespace Fgms\Distributor;
  */
 class GoogleMapsGeocoderPickFirstAmbiguityResolutionStrategy implements GoogleMapsGeocoderAmbiguityResolutionStrategy
 {
-	public function resolve(array $arr)
-	{
-		if (count($arr)===0) throw new \LogicException('Expected $arr to have at least one entry');
-		return $arr[0];
-	}
+    public function resolve(array $arr)
+    {
+        if (count($arr)===0) throw new \LogicException('Expected $arr to have at least one entry');
+        return $arr[0];
+    }
 }

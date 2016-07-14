@@ -15,16 +15,16 @@ namespace Fgms\Distributor;
  */
 interface GoogleMapsGeocoderAmbiguityResolutionStrategy
 {
-	/**
-	 *	Resolves ambiguity.
-	 *
-	 *	\param [in] $arr
-	 *		The array of results returned by the
-	 *		Google Maps API.
-	 *
-	 *	\return
-	 *		The entry from \em arr which should be
-	 *		selected.
-	 */
-	public function resolve(array $arr);
+    /**
+     *	Resolves ambiguity.
+     *
+     *	\param [in] $arr
+     *		The array of results returned by the
+     *		Google Maps API.
+     *
+     *	\return
+     *		The entry from \em arr which should be
+     *		selected.
+     */
+    public function resolve(array $arr);
 }
