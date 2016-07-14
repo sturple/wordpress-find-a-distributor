@@ -32,6 +32,7 @@ call_user_func(function () {
     $geo=new \Fgms\Distributor\GoogleMapsGeocoder($settings->getApiKey());
     $controller=new \Fgms\Distributor\ControllerImpl($wp,$wpdb,$geo,$prefix,$domain);
     $output_maps=true;
+    wp_enqueue_style($domain,plugin_dir_url(__FILE__).'style.css');
     add_filter('fgms-distributor-shortcode-filter',function ($str) use (&$output_maps) {
         if ($str!=='') return $str;
         wp_enqueue_script('jquery');

@@ -10,9 +10,8 @@
 	<label for="address">Zip/Postal Code, Address, or City</label>
 	<input type="text" name="address">
 	<input type="submit">
+	<ul class="found-distributors"></ul>
 </form>
-
-<ul class="found-distributors"></ul>
 
 <div class="found-distributors-map" style="height:800px;"></div>
 
@@ -28,7 +27,7 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 		var $=jQuery;
 		var curr=$('script').last();
 		var form=curr.prevAll('form.find-a-distributor').first();
-		var found=curr.prevAll('ul.found-distributors').first();
+		var found=form.find('.found-distributors').first();
 		var map_container=curr.prevAll('div.found-distributors-map').first();
 		var map=new google.maps.Map(map_container[0],{
 			zoom: 3,

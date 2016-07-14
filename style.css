@@ -1,0 +1,38 @@
+@charset "UTF-8";
+
+.find-a-distributor {
+	padding-right: 15px;
+}
+.find-a-distributor, .found-distributors-map {
+	float: left;
+	width: 50%;
+}
+.find-a-distributor > select, .find-a-distributor > input, .find-a-distributor > label {
+	display: block;
+	margin-bottom: 10px;
+	width: 100%;
+}
+.find-a-distributor > label {
+	font-weight: bold;
+}
+.find-a-distributor > label:after {
+	content: ":";
+}
+.find-a-distributor > input[type="submit"], .find-a-distributor > ul > li {
+	margin-bottom: 25px;
+}
+.find-a-distributor > ul > li {
+	list-style: none;
+}
+.found-distributor-street-address, .found-distributor-city, .found-distributor-territorial-unit, .found-distributor-country {
+	display: inline;
+}
+.found-distributor-street-address:after, .found-distributor-city:after, .found-distributor-territorial-unit:after {
+	content: ", ";
+}
+.found-distributor {
+	cursor: pointer;
+}
+.found-distributor > * {
+	margin-bottom: 10px;
+}
