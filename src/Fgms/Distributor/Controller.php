@@ -38,7 +38,7 @@ abstract class Controller
     private $db_version='0.0.1';
     private $db_version_opt;
 
-    public function __construct (WordPress $wp, $wpdb, Geocoder $geo, $prefix='fgms-distributor-', $domain='fgms-distributor')
+    public function __construct (\Fgms\WordPress\WordPress $wp, $wpdb, Geocoder $geo, $prefix='fgms-distributor-', $domain='fgms-distributor')
     {
         $this->wp=$wp;
         $this->wpdb=$wpdb;

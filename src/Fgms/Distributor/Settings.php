@@ -13,7 +13,7 @@ abstract class Settings
     private $domain;
     private $page;
 
-    public function __construct (WordPress $wp, $prefix='fgms-distributor-', $domain='fgms-distributor')
+    public function __construct (\Fgms\WordPress\WordPress $wp, $prefix='fgms-distributor-', $domain='fgms-distributor')
     {
         $this->wp=$wp;
         $this->prefix=$prefix;

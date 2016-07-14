@@ -27,7 +27,7 @@ call_user_func(function () {
     global $wpdb;
     $prefix='fgms-distributor-';
     $domain='fgms-distributor';
-    $wp=new \Fgms\Distributor\WordPressImpl();
+    $wp=new \Fgms\WordPress\WordPressImpl();
     $settings=new \Fgms\Distributor\SettingsImpl($wp,$prefix,$domain);
     $geo=new \Fgms\Distributor\GoogleMapsGeocoder($settings->getApiKey(),new \Fgms\Distributor\GoogleMapsGeocoderPickFirstAmbiguityResolutionStrategy());
     $controller=new \Fgms\Distributor\ControllerImpl($wp,$wpdb,$geo,$prefix,$domain);
