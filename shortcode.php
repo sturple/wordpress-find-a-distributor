@@ -55,9 +55,12 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 				raiseOnDrag: false
 			});
 			markers.push(marker);
+			var ie=document.createElement('div');
+			ie.setAttribute('class','found-distributor');
+			ie.innerHTML=dist.html;
 			var info_window=new google.maps.InfoWindow({
 				//	TODO: Change this?
-				content: dist.html,
+				content: ie.outerHTML,
 				disableAutoPan: true,
 				position: pos
 			});
