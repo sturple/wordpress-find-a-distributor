@@ -33,7 +33,8 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 		var map=new google.maps.Map(map_container[0],{
 			zoom: 3,
 			center: new google.maps.LatLng(46.0730555556,-100.546666667),
-			mapTypeId: google.maps.MapTypeId.ROADMAP
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			scrollwheel: false
 		});
 		var get=function (name) {
 			var str=form.find('input[name="'+name+'"]').val().trim();
