@@ -47,5 +47,10 @@ call_user_func(function () {
 			['%d','%f','%f']
 		);
 		if ($wpdb->last_error!=='') throw new \RuntimeException($wpdb->last_error);
+		//	Tags
+		$tags=explode(',',$dist['ssf_wp_tags']);
+		$tags=array_map(function ($str) {	return preg_replace('/^\\s+|\\s+$/u','',$str);	},$tags);
+		$tags=array_filter($tags,function ($str) {	return $str!=='';	});
+		wp_set_post_tags($id,$tags);
 	}
 });
