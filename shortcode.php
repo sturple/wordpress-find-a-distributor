@@ -42,9 +42,12 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 		};
 		var markers=[];
 		var info_windows=[];
+		var bounds=null;
 		var close_windows=function () {	info_windows.forEach(function (iw) {	iw.close();	});	};
 		var add_distributor=function (dist) {
 			var pos=new google.maps.LatLng(dist.lat,dist.lng);
+			if (bounds===null) bounds=new google.maps.LatLngBounds();
+			bounds.extend(pos);
 			var marker=new MarkerWithLabel({
 				position: pos,
 				draggable: false,
@@ -75,7 +78,9 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			map.setCenter(new google.maps.LatLng(obj.lat,obj.lng));
 			var arr=obj.results;
 			arr.sort(function (a, b) {	return a.distance-b.distance;	});
+			bounds=null;
 			arr.forEach(add_distributor);
+			if (bounds!==null) map.fitBounds(bounds);
 		};
 		form.submit(function (e) {
 			e.preventDefault();
