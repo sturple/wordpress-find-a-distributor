@@ -1,6 +1,12 @@
 <form class="find-a-distributor">
-	<label for="radius">Search Radius (km)</label>
-	<input type="text" name="radius">
+	<label for="radius">Search Radius</label>
+	<select name="radius">
+		<option value="10">10km</option>
+		<option value="20">20km</option>
+		<option value="50">50km</option>
+		<option value="100">100km</option>
+		<option value="500">500km</option>
+	</select>
 	<label for="address">Zip/Postal Code, Address, or City</label>
 	<input type="text" name="address">
 	<input type="submit">
@@ -78,7 +84,7 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			markers=[];
 			close_windows();
 			info_windows=[];
-			var radius=parseFloat(form.find('input[name="radius"]').val());
+			var radius=parseFloat(form.find('*[name="radius"]').val());
 			if (isNaN(radius)) return;
 			var address=get('address');
 			if (address===null) return;
