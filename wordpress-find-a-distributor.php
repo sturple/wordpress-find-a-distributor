@@ -29,7 +29,7 @@ call_user_func(function () {
     $domain='fgms-distributor';
     $wp=new \Fgms\Distributor\WordPressImpl();
     $settings=new \Fgms\Distributor\SettingsImpl($wp,$prefix,$domain);
-    $geo=new \Fgms\Distributor\GoogleMapsGeocoder($settings->getApiKey());
+    $geo=new \Fgms\Distributor\GoogleMapsGeocoder($settings->getApiKey(),new \Fgms\Distributor\GoogleMapsGeocoderPickFirstAmbiguityResolutionStrategy());
     $controller=new \Fgms\Distributor\ControllerImpl($wp,$wpdb,$geo,$prefix,$domain);
     $output_maps=true;
     add_action('wp_enqueue_scripts',function () use ($domain) {   wp_enqueue_style($domain,plugin_dir_url(__FILE__).'style.css'); });
