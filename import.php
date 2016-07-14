@@ -32,7 +32,7 @@ call_user_func(function () {
 		$lng=floatval($dist['ssf_wp_longitude']);
 		global $wpdb;
 		$wpdb->replace(
-			'wp_fgms_distributor',
+			$wpdb->prefix.'fgms_distributor',
 			['ID' => $id,'lat' => $lat,'lng' => $lng],
 			['%d','%f','%f']
 		);
