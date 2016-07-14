@@ -8,12 +8,20 @@ call_user_func(function () {
 		//	Core post stuff (title/name & content/description)
 		$post=[
 			'post_title' => $dist['ssf_wp_store'],
-			'post_content' => $dist['ssf_wp_description'],
 			'post_type' => 'distributor',
 			'post_status' => 'publish',
 			'comment_status' => 'closed',
 			'ping_status' => 'closed'
 		];
+		$first_name='';
+		$last_name='';
+		$num=preg_match('/^\\s*(\\S+)\\s+(\\S+)\\s*$/u',$dist['ssf_wp_description'],$matches);
+		if ($num===0) {
+			$post['post_content']=$dist['ssf_wp_description'];
+		} else {
+			$first_name=$matches[1];
+			$last_name=$matches[2];
+		}
 		$id=wp_insert_post($post);
 		if ($id instanceof \WP_Error) throw new \RuntimeException(implode(', ',$id->get_error_messages()));
 		if ($id===0) throw new \RuntimeException('wp_insert_post failed');
@@ -27,6 +35,8 @@ call_user_func(function () {
 		update_post_meta($id,'fgms-distributor-phone',$dist['ssf_wp_phone']);
 		update_post_meta($id,'fgms-distributor-fax',$dist['ssf_wp_fax']);
 		update_post_meta($id,'fgms-distributor-email',$dist['ssf_wp_email']);
+		update_post_meta($id,'fgms-distributor-first-name',$first_name);
+		update_post_meta($id,'fgms-distributor-last-name',$last_name);
 		//	Lat/lng
 		$lat=floatval($dist['ssf_wp_latitude']);
 		$lng=floatval($dist['ssf_wp_longitude']);
