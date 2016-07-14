@@ -1,19 +1,23 @@
-<form class="find-a-distributor">
-	<label for="radius">Search Radius</label>
-	<select name="radius">
-		<option value="10">10km</option>
-		<option value="20">20km</option>
-		<option value="50">50km</option>
-		<option value="100">100km</option>
-		<option value="500">500km</option>
-	</select>
-	<label for="address">Zip/Postal Code, Address, or City</label>
-	<input type="text" name="address">
-	<input type="submit">
-	<ul class="found-distributors"></ul>
-</form>
+<div class="find-a-distributor">
 
-<div class="found-distributors-map" style="height:800px;"></div>
+	<form class="find-a-distributor-form">
+		<label for="radius">Search Radius</label>
+		<select name="radius">
+			<option value="10">10km</option>
+			<option value="20">20km</option>
+			<option value="50">50km</option>
+			<option value="100">100km</option>
+			<option value="500">500km</option>
+		</select>
+		<label for="address">Zip/Postal Code, Address, or City</label>
+		<input type="text" name="address">
+		<input type="submit">
+		<ul class="found-distributors"></ul>
+	</form>
+
+	<div class="found-distributors-map" style="height:800px;"></div>
+
+</div>
 
 <?php	if ($output_maps):$output_maps=false;	?>
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?v=3&sensor=false"></script>
@@ -26,9 +30,10 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 	(function () {
 		var $=jQuery;
 		var curr=$('script').last();
-		var form=curr.prevAll('form.find-a-distributor').first();
+		var container=curr.prevAll('.find-a-distributor').first();
+		var form=container.find('form').first();
 		var found=form.find('.found-distributors').first();
-		var map_container=curr.prevAll('div.found-distributors-map').first();
+		var map_container=container.find('div.found-distributors-map').first();
 		var map=new google.maps.Map(map_container[0],{
 			zoom: 3,
 			center: new google.maps.LatLng(46.0730555556,-100.546666667),
