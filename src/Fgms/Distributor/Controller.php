@@ -22,6 +22,7 @@ abstract class Controller
     private $first_name;
     private $last_name;
     private $phone;
+    private $fax;
     private $email;
     private $website;
     private $contact_meta_box_id;
@@ -52,6 +53,7 @@ abstract class Controller
         $this->first_name=$prefix.'first-name';
         $this->last_name=$prefix.'last-name';
         $this->phone=$prefix.'phone';
+        $this->fax=$prefix.'fax';
         $this->email=$prefix.'email';
         $this->website=$prefix.'website';
         $this->contact_meta_box_id=$prefix.'contact-meta-box';
@@ -132,6 +134,7 @@ abstract class Controller
         $this->metaBoxOutput($this->first_name,'First Name',$post);
         $this->metaBoxOutput($this->last_name,'Last Name',$post);
         $this->metaBoxOutput($this->phone,'Phone Number',$post);
+        $this->metaBoxOutput($this->fax,'Fax Number',$post);
         $this->metaBoxOutput($this->email,'E-Mail',$post);
         $this->metaBoxOutput($this->website,'Website',$post);
     }
@@ -155,6 +158,7 @@ abstract class Controller
             'first_name' => $update($this->first_name),
             'last_name' => $update($this->last_name),
             'phone' => $update($this->phone),
+            'fax' => $update($this->fax),
             'email' => $update($this->email),
             'website' => $update($this->website)
         ];
@@ -309,6 +313,7 @@ abstract class Controller
             'first_name' => $this->wp->get_post_meta($id,$this->first_name,true),
             'last_name' => $this->wp->get_post_meta($id,$this->last_name,true),
             'phone' => $this->wp->get_post_meta($id,$this->phone,true),
+            'fax' => $this->wp->get_post_meta($id,$this->fax,true),
             'email' => $this->wp->get_post_meta($id,$this->email,true),
             'website' => $this->wp->get_post_meta($id,$this->website,true)
         ];
