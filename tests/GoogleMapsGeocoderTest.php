@@ -10,7 +10,11 @@ class GoogleMapsGeocoderTest extends \PHPUnit\Framework\TestCase
         $this->mock=new \GuzzleHttp\Handler\MockHandler();
         $handler=\GuzzleHttp\HandlerStack::create($this->mock);
         $client=new \GuzzleHttp\Client(['handler' => $handler]);
-        $this->geo=new \Fgms\Distributor\GoogleMapsGeocoder($this->api_key,$client);
+        $this->geo=new \Fgms\Distributor\GoogleMapsGeocoder(
+            $this->api_key,
+            new \Fgms\Distributor\GoogleMapsGeocoderExceptionAmbiguityResolutionStrategy(),
+            $client
+        );
     }
     private function throws()
     {

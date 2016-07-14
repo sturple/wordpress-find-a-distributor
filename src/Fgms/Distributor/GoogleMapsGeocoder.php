@@ -9,6 +9,7 @@ class GoogleMapsGeocoder implements Geocoder
     private $api_key;
     private $decode_depth=10;
     private $client;
+    private $resolver;
     /**
      *	Creates a new GoogleMapsGeocoder object which performs
      *	geocoding requests against the Google Maps API using
@@ -17,16 +18,24 @@ class GoogleMapsGeocoder implements Geocoder
      *	\param [in] $api_key
      *		The API key which shall be used to perform requests
      *		against the Google Maps API.
+     *  \param [in] $resolver
+     *      The \ref GoogleMapsGeocoderAmbiguityResolutionStrategy
+     *      object which the newly created GoogleMapsGeocoder should
+     *      use to resolve ambiguous queries.  Defaults to \em null
+     *      in which case a \ref GoogleMapsGeocoderExceptionAmbiguityResolutionStrategy
+     *      shall be used.
      *  \param [in] $client
      *      The GuzzleHttp\\Client object to be used to dispatch
      *      HTTP requests.  Defaults to \em null in which case
      *      a GuzzleHttp\\Client shall be default constructod.
      */
-    public function __construct ($api_key, \GuzzleHttp\Client $client=null)
+    public function __construct ($api_key, GoogleMapsGeocoderAmbiguityResolutionStrategy $resolver=null, \GuzzleHttp\Client $client=null)
     {
         $this->api_key=$api_key;
         $this->client=$client;
+        $this->resolver=$resolver;
         if (is_null($this->client)) $this->client=new \GuzzleHttp\Client();
+        if (is_null($this->resolver)) $this->resolver=new GoogleMapsGeocoderExceptionAmbiguityResolutionStrategy();
     }
     private function getUrl($address)
     {
@@ -60,8 +69,7 @@ class GoogleMapsGeocoder implements Geocoder
         $rs=$json->results;
         if (!is_array($rs)) $this->raise(sprintf('"results" not array: %s',$body));
         if (count($rs)===0) $this->raise(sprintf('No results: %s',$body));
-        if (count($rs)!==1) $this->raise(sprintf('Ambiguous: %s',$body));
-        $r=$rs[0];
+        $r=(count($rs)===1) ? $rs[0] : $this->resolver->resolve($rs);
         if (!isset($r->geometry)) $this->raise(sprintf('No "results"."geometry":%s',$body));
         $g=$r->geometry;
         if (!is_object($g)) $this->raise(sprintf('"results"."geometry" not an object: %s',$body));
