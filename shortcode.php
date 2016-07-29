@@ -1,3 +1,33 @@
+<style type="text/css">
+
+	.found-distributors {
+		counter-reset: found-distributors-counter;
+	}
+	.found-distributors > li {
+		padding-left: 47px;
+		position: relative;
+	}
+	.found-distributors > li:before {
+		content: counter(found-distributors-counter);
+		counter-increment: found-distributors-counter;
+		margin-right: 12px;
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+	.find-a-distributor-label, .found-distributors > li:before {
+		/*	TODO: Change this link	*/
+		background: url('http://www.velscope.com/assets/images/template/map-point.png') no-repeat;
+		color: #eee;
+		font-size: 14px !important;
+		height: 41px;
+		line-height: 26px;
+		text-align: center;
+		width: 32px;
+	}
+
+</style>
+
 <div class="find-a-distributor">
 
 	<form class="find-a-distributor-form">
@@ -50,7 +80,7 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 		var info_windows=[];
 		var bounds=null;
 		var close_windows=function () {	info_windows.forEach(function (iw) {	iw.close();	});	};
-		var add_distributor=function (dist) {
+		var add_distributor=function (dist, i) {
 			var pos=new google.maps.LatLng(dist.lat,dist.lng);
 			if (bounds===null) bounds=new google.maps.LatLngBounds();
 			bounds.extend(pos);
@@ -58,7 +88,20 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 				position: pos,
 				draggable: false,
 				map: map,
-				raiseOnDrag: false
+				raiseOnDrag: false,
+				labelContent: ''+(i+1),
+				labelAnchor: new google.maps.Point(15, 40),	//	No idea what these numbers mean
+				labelClass: 'find-a-distributor-label',
+				labelInBackground: false,
+				icon: {
+					path: google.maps.SymbolPath.CIRCLE,
+					fillOpacity: 0.5,
+					fillColor: '#D44300',
+					strokeOpacity: 1,
+					strokeColor: '#BA3C01',
+					strokeWeight: 2,
+					scale: 1
+				}
 			});
 			markers.push(marker);
 			var ie=document.createElement('div');
