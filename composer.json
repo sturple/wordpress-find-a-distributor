@@ -1,7 +1,7 @@
 {
     "name" : "sturple/wordpress-find-a-distributor",
     "version" : "0.0.1",
-    "description" : "Wordpress plugin to add custom post type distributor with shortcode interface to find a distrubtor with google map",
+    "description" : "Wordpress plugin to add custom post type distributor with shortcode interface to find a distributor with google map",
     "keywords" : ["wordpress", "plugin","find","distributor","FGMS"],
     "homepage" : "https://github.com/sturple/wordpress-find-a-distributor",
     "license" : "GPL-3.0",
@@ -11,7 +11,7 @@
             "name" : "Shawn Turple",
             "email" : "shawn@turple.ca",
             "homepage" : "http://turple.ca",
-            "role" : "Developer"            
+            "role" : "Developer"
         },
         {
             "name" : "Robert Leahy",
@@ -21,7 +21,12 @@
 
     ],
     "require": {
-        "php" : ">=5.4",        
-        "composer/installers": "~1.0"        
+        "php" : ">=5.4",
+        "composer/installers": "~1.0",
+        "guzzlehttp/guzzle": "^6.2",
+        "sturple/wordpress-utilities": "~1.0"
+    },
+    "autoload": {
+        "psr-4" : {"Fgms\\" : "src/Fgms/"}
     }
 }
