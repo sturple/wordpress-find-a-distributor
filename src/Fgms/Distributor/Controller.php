@@ -82,6 +82,7 @@ abstract class Controller
                 'singular_name' => $this->wp->__('Distributor',$this->domain)
             ],
             'public' => true,
+            'has_archive' => true,
             'register_meta_box_cb' => [$this,'registerMetaBox']
         ]);
     }

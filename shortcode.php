@@ -29,8 +29,10 @@
 </style>
 
 <div class="find-a-distributor">
-
 	<form class="find-a-distributor-form">
+		<label for="address">Zip/Postal Code, Address, or City</label>
+		<input type="text" name="address">
+		
 		<label for="radius">Search Radius</label>
 		<select name="radius">
 			<option value="10">10km</option>
@@ -39,8 +41,7 @@
 			<option value="100">100km</option>
 			<option value="500">500km</option>
 		</select>
-		<label for="address">Zip/Postal Code, Address, or City</label>
-		<input type="text" name="address">
+
 		<input type="submit">
 		<ul class="found-distributors"></ul>
 	</form>

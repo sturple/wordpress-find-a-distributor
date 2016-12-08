@@ -1,18 +1,23 @@
 @charset "UTF-8";
 
 .find-a-distributor {
-	overflow: hidden;
+
 }
 .find-a-distributor-form {
 	padding-right: 15px;
 }
 .find-a-distributor-form {
 	float: left;
-	width: 50%;
+	width: 40%;
+	margin-right:2%;
+	overflow: hidden;
+	height : 500px;
+	border: 1px solid #ccc;
+	padding: 24px;
 }
 .found-distributors-map {
 	float: left;
-	width: 50%;
+	width: 58%;
 }
 .find-a-distributor-form > select, .find-a-distributor-form > input, .find-a-distributor-form > label {
 	display: block;
