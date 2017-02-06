@@ -25,6 +25,7 @@ abstract class Controller
     private $fax;
     private $email;
     private $website;
+    private $tags;
     private $contact_meta_box_id;
     private $address_meta_box_id;
 
@@ -56,6 +57,7 @@ abstract class Controller
         $this->fax=$prefix.'fax';
         $this->email=$prefix.'email';
         $this->website=$prefix.'website';
+        $this->tags = $prefix.'tags';
         $this->contact_meta_box_id=$prefix.'contact-meta-box';
         $this->address_meta_box_id=$prefix.'address-meta-box';
         $this->table_name=$wpdb->prefix.'fgms_distributor';
@@ -81,6 +83,7 @@ abstract class Controller
                 'name' => $this->wp->__('Distributors',$this->domain),
                 'singular_name' => $this->wp->__('Distributor',$this->domain)
             ],
+            'menu_icon'=>'dashicons-networking',
             'public' => true,
             'has_archive' => true,
             'register_meta_box_cb' => [$this,'registerMetaBox']
@@ -138,6 +141,7 @@ abstract class Controller
         $this->metaBoxOutput($this->fax,'Fax Number',$post);
         $this->metaBoxOutput($this->email,'E-Mail',$post);
         $this->metaBoxOutput($this->website,'Website',$post);
+        $this->metaBoxOutput($this->tags,'Tags',$post);
     }
 
     public function savePost(\WP_Post $post)
@@ -161,7 +165,9 @@ abstract class Controller
             'phone' => $update($this->phone),
             'fax' => $update($this->fax),
             'email' => $update($this->email),
-            'website' => $update($this->website)
+            'website' => $update($this->website),
+            'tags' =>$update($this->tags)
+            
         ];
         if (is_null($obj->address) || is_null($obj->city) || is_null($obj->country)) {
             $this->delete($id);
@@ -206,7 +212,20 @@ abstract class Controller
             $lng=$pair[1];
         }
         $arr=[];
-        foreach ($this->getRadius($lat,$lng,$radius) as $obj) $arr[]=$this->getAjaxResponse($obj);
+        foreach ($this->getRadius($lat,$lng,$radius) as $obj)
+        {
+            $get_tags = strtoupper($this->get('tags'));
+            
+            $tags = explode(',',strtoupper(trim($obj->tags,',')));
+            foreach ($tags as $key=>$value){
+                $tags[$key] = trim($value);
+            }
+            
+            if ( (in_array($get_tags,$tags)) or ($get_tags == '') ){
+                $arr[]=$this->getAjaxResponse($obj);
+            }
+            
+        }
         $result=(object)[
             'lat' => $lat,
             'lng' => $lng,
@@ -294,7 +313,8 @@ abstract class Controller
             'distance' => floatval($obj->distance),
             'lat' => floatval($obj->lat),
             'lng' => floatval($obj->lng),
-            'post' => get_post(intval($obj->ID))
+            'post' => get_post(intval($obj->ID)),
+            'tags' => get_post_meta(intval($obj->ID),'fgms-distributor-tags',true)
         ];
         return $retr;
     }
@@ -316,7 +336,8 @@ abstract class Controller
             'phone' => $this->wp->get_post_meta($id,$this->phone,true),
             'fax' => $this->wp->get_post_meta($id,$this->fax,true),
             'email' => $this->wp->get_post_meta($id,$this->email,true),
-            'website' => $this->wp->get_post_meta($id,$this->website,true)
+            'website' => $this->wp->get_post_meta($id,$this->website,true),
+            'tags' => implode(' | ',explode(',',trim($obj->tags,',')))
         ];
         $obj->html=$this->wp->apply_filters($this->distributor_filter,'',$post,clone $obj);
         $obj->html=preg_replace('/^\\s+|\\s+$/u','',$obj->html);
