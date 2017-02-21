@@ -21,10 +21,14 @@ call_user_func(function () {
         break;
     }
     if (is_null($where)) throw new \RuntimeException('Could not find autoloader');
+    
     require_once $where;
+    
+    
 });
 call_user_func(function () {
     global $wpdb;
+    
     $prefix='fgms-distributor-';
     $domain='fgms-distributor';
     $wp=new \Fgms\WordPress\WordPressImpl();
@@ -37,6 +41,7 @@ call_user_func(function () {
         if ($str!=='') return $str;
         wp_enqueue_script('jquery');
         ob_start();
+        require_once __DIR__.'/allowed-tags.php';
         require __DIR__.'/shortcode.php';
         $retr=ob_get_contents();
         ob_end_clean();

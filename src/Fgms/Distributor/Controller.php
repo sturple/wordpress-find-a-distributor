@@ -1,6 +1,5 @@
 <?php
 namespace Fgms\Distributor;
-
 /**
  *  Implements the functionality of the Find a Distributor
  *  WordPress plugin.
@@ -10,10 +9,8 @@ abstract class Controller
     private $wp;
     private $wpdb;
     private $geo;
-
     private $post_type;
     private $domain;
-
     private $address;
     private $city;
     private $territorial_unit;
@@ -28,11 +25,9 @@ abstract class Controller
     private $tags;
     private $contact_meta_box_id;
     private $address_meta_box_id;
-
     private $save_action;
     private $shortcode_filter;
     private $distributor_filter;
-
     private $table_name;
     private $ajax_action='fgms_distributor_radius';
     private $shortcode='find_a_distributor';
@@ -41,6 +36,7 @@ abstract class Controller
 
     public function __construct (\Fgms\WordPress\WordPress $wp, $wpdb, Geocoder $geo, $prefix='fgms-distributor-', $domain='fgms-distributor')
     {
+
         $this->wp=$wp;
         $this->wpdb=$wpdb;
         $this->geo=$geo;
@@ -114,14 +110,33 @@ abstract class Controller
 
     private function metaBoxOutput($name, $title, \WP_Post $post)
     {
-        $this->output(
-            sprintf(
-                '<label for="%1$s">%2$s</label><br><input class="widefat" type="text" name="%1$s" id="%1$s" value="%3$s"><br>',
-                $this->wp->esc_attr($name),
-                htmlspecialchars($title),
-                $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true))
-            )
-        );
+        //requires special logic for tag to put into checkboxes
+        if ($title == 'Tags'){
+            require_once __DIR__.'/../../../allowed-tags.php';
+            $value = $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true));
+            $value_array = array_map('trim',explode(',',$value));
+            $output = '<div style="font-size: 0.8em; font-style: italic;margin:8px 0 4px;">'.$value .'</div>';
+            foreach ($allowed_tags as $tag){
+                $checked = in_array($tag,$value_array) ? ' CHECKED ' : '';
+                $output .= sprintf(
+                                '<div><label><input type="checkbox" value="%2$s" name="%1s[]" %3$s /> %2$s</label></div>',
+                                $this->wp->esc_attr($name),                               
+                                $tag,
+                                $checked
+                            );                
+            }
+            $this->output($output);
+        }
+        else {
+            $this->output(
+                sprintf(
+                    '<label for="%1$s">%2$s</label><br><input class="widefat" type="text" name="%1$s" id="%1$s" value="%3$s"><br>',
+                    $this->wp->esc_attr($name),
+                    htmlspecialchars($title),
+                    $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true))
+                )
+            );            
+        }
     }
 
     public function outputAddressMetaBox(\WP_Post $post)
@@ -149,7 +164,13 @@ abstract class Controller
         if ($post->post_type!==$this->post_type) return;
         $id=$post->ID;
         $update=function ($key) use ($id) {
+            
             $v=$this->post($key);
+            // if tags then it should be in array implode to save.
+            if ($key == $this->tags) {            
+                $v = implode(',',$v);
+            }          
+            
             update_post_meta($id,$key,is_null($v) ? '' : $v);
             return $v;
         };
@@ -166,8 +187,7 @@ abstract class Controller
             'fax' => $update($this->fax),
             'email' => $update($this->email),
             'website' => $update($this->website),
-            'tags' =>$update($this->tags)
-            
+            'tags' =>$update($this->tags)            
         ];
         if (is_null($obj->address) || is_null($obj->city) || is_null($obj->country)) {
             $this->delete($id);
@@ -212,19 +232,34 @@ abstract class Controller
             $lng=$pair[1];
         }
         $arr=[];
-        foreach ($this->getRadius($lat,$lng,$radius) as $obj)
+        require_once __DIR__.'/../../../allowed-tags.php';
+        $results = $this->getRadius($lat,$lng,$radius);
+        if ( (count($results) == 0) and ($radius == 500) ){
+            // this is a catch all to search a bigger radius say 5000 km
+            $results = $this->getRadius($lat,$lng,5000);
+        }
+        foreach ( $results as $obj)
         {
-            $get_tags = strtoupper($this->get('tags'));
             
-            $tags = explode(',',strtoupper(trim($obj->tags,',')));
-            foreach ($tags as $key=>$value){
-                $tags[$key] = trim($value);
-            }
+            // filter logic for public site
+            $get_tags = strtoupper($this->get('tags'));
+            $tags = array_map('trim',explode(',',strtoupper(trim($obj->tags,','))));
             
             if ( (in_array($get_tags,$tags)) or ($get_tags == '') ){
                 $arr[]=$this->getAjaxResponse($obj);
             }
-            
+            // if all fitler
+            if ($get_tags == 'ALL'){
+                $hasAllFlag = true;
+                foreach ($allowed_tags as $atag){
+                    if (! in_array(strtoupper($atag),$tags)){
+                        $hasAllFlag = false;
+                    }                    
+                }
+                if ($hasAllFlag){
+                    $arr[]=$this->getAjaxResponse($obj);
+                }
+            }            
         }
         $result=(object)[
             'lat' => $lat,
@@ -299,7 +334,7 @@ abstract class Controller
                 )
             )) AS distance
             FROM %1$s
-            HAVING distance<%4$f',
+            ',
             $this->table_name,
             $lat,
             $lng,
@@ -314,6 +349,7 @@ abstract class Controller
             'lat' => floatval($obj->lat),
             'lng' => floatval($obj->lng),
             'post' => get_post(intval($obj->ID)),
+            'inradius' => ( floatval($obj->distance) < floatval($radius)),
             'tags' => get_post_meta(intval($obj->ID),'fgms-distributor-tags',true)
         ];
         return $retr;
@@ -327,6 +363,8 @@ abstract class Controller
             'distance' => $obj->distance,
             'lat' => $obj->lat,
             'lng' => $obj->lng,
+            'inradius' => $obj->inradius,
+            'marker' => false,
             'address' => $this->wp->get_post_meta($id,$this->address,true),
             'city' => $this->wp->get_post_meta($id,$this->city,true),
             'territorial_unit' => $this->wp->get_post_meta($id,$this->territorial_unit,true),
@@ -347,6 +385,10 @@ abstract class Controller
         return $obj;
     }
 
+    private function getAllowedTags()
+    {
+        
+    }
     /**
      *  When implemented in a derived class performs
      *  output.

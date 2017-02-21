@@ -27,7 +27,7 @@ abstract class Settings
 
     public function registerSettings()
     {
-        $this->wp->add_settings_section('section','All Settings',null,$this->page);
+        $this->wp->add_settings_section('section','Settings',null,$this->page);
         $this->wp->add_settings_field(
             $this->api_key,
             $this->wp->__('Google Maps API Key',$this->domain),
