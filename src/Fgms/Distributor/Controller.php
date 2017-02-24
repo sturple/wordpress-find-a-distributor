@@ -33,10 +33,8 @@ abstract class Controller
     private $shortcode='find_a_distributor';
     private $db_version='0.0.1';
     private $db_version_opt;
-
     public function __construct (\Fgms\WordPress\WordPress $wp, $wpdb, Geocoder $geo, $prefix='fgms-distributor-', $domain='fgms-distributor')
     {
-
         $this->wp=$wp;
         $this->wpdb=$wpdb;
         $this->geo=$geo;
@@ -71,7 +69,6 @@ abstract class Controller
         $this->wp->add_action('plugins_loaded',[$this,'setup']);
         $this->wp->add_shortcode('find_a_distributor',[$this,'shortcode']);
     }
-
     public function registerPostType()
     {
         $this->wp->register_post_type($this->post_type,[
@@ -85,7 +82,6 @@ abstract class Controller
             'register_meta_box_cb' => [$this,'registerMetaBox']
         ]);
     }
-
     public function registerMetaBox(\WP_Post $post)
     {
         $this->wp->add_meta_box(
@@ -107,7 +103,6 @@ abstract class Controller
             null
         );
     }
-
     private function metaBoxOutput($name, $title, \WP_Post $post)
     {
         //requires special logic for tag to put into checkboxes
@@ -120,10 +115,10 @@ abstract class Controller
                 $checked = in_array($tag,$value_array) ? ' CHECKED ' : '';
                 $output .= sprintf(
                                 '<div><label><input type="checkbox" value="%2$s" name="%1s[]" %3$s /> %2$s</label></div>',
-                                $this->wp->esc_attr($name),                               
+                                $this->wp->esc_attr($name),
                                 $tag,
                                 $checked
-                            );                
+                            );
             }
             $this->output($output);
         }
@@ -135,10 +130,9 @@ abstract class Controller
                     htmlspecialchars($title),
                     $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true))
                 )
-            );            
+            );
         }
     }
-
     public function outputAddressMetaBox(\WP_Post $post)
     {
         $this->metaBoxOutput($this->address,'Address',$post);
@@ -147,7 +141,6 @@ abstract class Controller
         $this->metaBoxOutput($this->country,'Country',$post);
         $this->metaBoxOutput($this->postal_code,'Postal/Zip Code',$post);
     }
-
     public function outputContactMetaBox(\WP_Post $post)
     {
         $this->metaBoxOutput($this->first_name,'First Name',$post);
@@ -158,19 +151,16 @@ abstract class Controller
         $this->metaBoxOutput($this->website,'Website',$post);
         $this->metaBoxOutput($this->tags,'Tags',$post);
     }
-
     public function savePost(\WP_Post $post)
     {
         if ($post->post_type!==$this->post_type) return;
         $id=$post->ID;
         $update=function ($key) use ($id) {
-            
             $v=$this->post($key);
             // if tags then it should be in array implode to save.
-            if ($key == $this->tags) {            
+            if ($key == $this->tags) {
                 $v = implode(',',$v);
-            }          
-            
+            }
             update_post_meta($id,$key,is_null($v) ? '' : $v);
             return $v;
         };
@@ -187,7 +177,7 @@ abstract class Controller
             'fax' => $update($this->fax),
             'email' => $update($this->email),
             'website' => $update($this->website),
-            'tags' =>$update($this->tags)            
+            'tags' =>$update($this->tags)
         ];
         if (is_null($obj->address) || is_null($obj->city) || is_null($obj->country)) {
             $this->delete($id);
@@ -204,19 +194,17 @@ abstract class Controller
         }
         $this->wp->do_action($this->save_action,$post,$obj);
     }
-
     public function deletePost(\WP_Post $post)
     {
         if ($post->post_type!==$this->post_type) return;
         $this->delete($post->ID);
     }
-
     public function ajax()
     {
         $get_get_float=function ($key) {
             $v=$this->get($key);
             if (is_null($v)) return null;
-            if (!is_numeric($v)) throw new \RuntimeException(sprintf('GET value "%s" is non-numeric string "%s"',$key,$v));
+            if (!is_numeric($v)) $v = 0;//throw new \RuntimeException(sprintf('GET value "%s" is non-numeric string "%s"',$key,$v));
             return floatval($v);
         };
         $radius=$get_get_float('radius');
@@ -240,11 +228,9 @@ abstract class Controller
         }
         foreach ( $results as $obj)
         {
-            
             // filter logic for public site
             $get_tags = strtoupper($this->get('tags'));
             $tags = array_map('trim',explode(',',strtoupper(trim($obj->tags,','))));
-            
             if ( (in_array($get_tags,$tags)) or ($get_tags == '') ){
                 $arr[]=$this->getAjaxResponse($obj);
             }
@@ -254,12 +240,12 @@ abstract class Controller
                 foreach ($allowed_tags as $atag){
                     if (! in_array(strtoupper($atag),$tags)){
                         $hasAllFlag = false;
-                    }                    
+                    }
                 }
                 if ($hasAllFlag){
                     $arr[]=$this->getAjaxResponse($obj);
                 }
-            }            
+            }
         }
         $result=(object)[
             'lat' => $lat,
@@ -271,7 +257,6 @@ abstract class Controller
         $this->output(json_encode($result));
         $this->wp->wp_die();
     }
-
     public function setup()
     {
         if ($this->wp->get_option($this->db_version_opt)===$this->db_version) return;
@@ -288,23 +273,19 @@ abstract class Controller
         $this->wp->dbDelta($sql);
         $this->wp->update_option($this->db_version_opt,$this->db_version);
     }
-
     public function shortcode()
     {
         return $this->wp->apply_filters($this->shortcode_filter,'');
     }
-
     private function dbRaise()
     {
         if ($this->wpdb->last_error!=='') throw new \RuntimeException($this->wpdb->last_error);
     }
-
     private function delete($id)
     {
         $this->wpdb->delete($this->table_name,['ID' => $id],['%d']);
         $this->dbRaise();
     }
-
     private function insert($id, $lat, $lng)
     {
         $this->wpdb->replace(
@@ -314,8 +295,7 @@ abstract class Controller
         );
         $this->dbRaise();
     }
-
-    private function getRadius($lat, $lng, $radius, $km=true)
+    private function getRadius($lat, $lng, $radius=100, $km=true)
     {
         $magic=$km ? 6371 : 3959;
         $sql=sprintf(
@@ -354,7 +334,6 @@ abstract class Controller
         ];
         return $retr;
     }
-
     private function getAjaxResponse($obj)
     {
         $post=$obj->post;
@@ -384,10 +363,8 @@ abstract class Controller
         $obj->description=$post->post_content;
         return $obj;
     }
-
     private function getAllowedTags()
     {
-        
     }
     /**
      *  When implemented in a derived class performs
@@ -397,7 +374,6 @@ abstract class Controller
      *      The string to output.
      */
     abstract protected function output($str);
-
     /**
      *  When implemented in a derived class sets a header
      *  on the current response.
@@ -406,7 +382,6 @@ abstract class Controller
      *      The header to set.
      */
     abstract protected function header($header);
-
     /**
      *  When implemented in a derived class retrieves
      *  a value from the query string of the current
@@ -425,7 +400,6 @@ abstract class Controller
      *      if there is no value associated with \em key.
      */
     abstract protected function get($key, $default=null);
-
     /**
      *  When implemented in a derived class retrieves
      *  a value from the POST'd content of the current
