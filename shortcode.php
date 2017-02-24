@@ -4,6 +4,19 @@
 			<h3>Filter</h3>
 			<form class="find-a-distributor-form">
 				<div class="error-message"></div>
+				<h4 style="margin-bottom: 16px; padding-top:0">Select a Region</h4>
+				<div class="form-group">
+					
+					<select name="region" class="form-control ">
+						<option value="">Select ...</option>
+						<option value="ca" >Canada</option>
+						<option value="us" >US</option>
+						<option value="nz" >New Zealand</option>
+						<option value="au" >Australia</option>
+						<option value="gb" >Europe</option>
+					</select>
+				</div>
+				<h4 style="margin-bottom: 8px;">Narrow your search</h4>
 				<div class="form-group">
 					<label for="address">Zip/Postal Code, Address, or City</label>
 					<input type="text" id="gm-distributor-autocomplete" name="address" class="form-control" >
@@ -11,8 +24,9 @@
 				<div class="form-group">
 					<label for="radius">Search Radius</label>
 					<select name="radius" class="form-control ">
-						<option  value="500">500km</option>
-						<option selected="selected"  value="100">100km</option>
+						<option value ="">Select ...</option>
+						<option value="500">500km</option>
+						<option value="100">100km</option>
 						<option value="50">50km</option>
 						<option value="20">20km</option>
 						<option value="10">10km</option>
@@ -28,7 +42,7 @@
 						<option value="" selected="selected" >No Filter</option>
 					</select>
 				</div>
-				<div class="form-group">
+				<div style="padding-top: 12px" class="form-group">
 					<input type="submit" value="Find a Dealer">
 				</div>
 			</form>
@@ -63,31 +77,36 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			scrollwheel: false,
 			maxZoom: 18
 		});
-		var get=function (name) {
-			var str=form.find('input[name="'+name+'"]').val().trim();
+		var get=function (name,textflag) {
+			textflag = textflag || false;
+			var $field = form.find('*[name="'+name+'"]');
+			var str='';
+			if ($field.is('select')){
+				$selected = $field.find(":selected");
+				str= textflag ? $selected.text().trim() : $selected.val().trim();
+			}
+			if ($field.is('input')){
+				str =$field.val().trim();					
+			}
+			
 			if (str==='') return null;
 			return str;
 		};
 		var markers=[];
 		var info_windows=[];
 		var bounds=null;
-		var search_options = {types: []};
+		var auto_viewport={};
+	
+		var search_options = {types: [ '(cities)' ]};
 		var autocomplete = new google.maps.places.Autocomplete(document.getElementById('gm-distributor-autocomplete'), search_options);
+		
+		
 		var close_windows=function () {	info_windows.forEach(function (iw) {	iw.close();	});	};
 		var add_distributor=function (dist, i) {
 			var pos=new google.maps.LatLng(dist.lat,dist.lng);
 			var mapbounds =map.getBounds();
-			var search_place = autocomplete.getPlace();
-			var search_within = false;
-			if (search_place !== undefined ){
-				if (search_place.geometry !== undefined) {
-					if (search_place.geometry.viewport !== undefined ) {
-						search_within = search_place.geometry.viewport.contains(pos) 
-					}
-				
-				}
-			}
-
+			var search_within = auto_viewport.contains(pos);
+	
 			if ( ( (dist.inradius ) ||  (search_within) || (mapbounds.contains(pos) ) ) && ( dist.marker == false) ) {
 
 				//if (bounds===null) bounds=new google.maps.LatLngBounds();
@@ -150,8 +169,7 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			map.setCenter(new google.maps.LatLng(obj.lat,obj.lng));
 			var arr=obj.results;
 			arr.sort(function (a, b) {	return a.distance-b.distance;	});
-			bounds=null;
-
+			bounds=null;			
 			var circ = new google.maps.Circle({
 				strokeColor: '#000000',
 				strokeOpacity: 0.8,
@@ -162,8 +180,19 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 				center: new google.maps.LatLng(obj.lat,obj.lng),
 				radius: obj.radius * 1000
 			});			
-			bounds = circ.getBounds();
+			var circle_bounds = circ.getBounds()
+			var bne = circle_bounds.getNorthEast();
+			var bsw = circle_bounds.getSouthWest();
+			// if circle is in auto_viewport (bounds) then must be a region or bigger area.
+			bounds = (auto_viewport.contains(bne) && auto_viewport.contains(bsw)) ? auto_viewport : circle_bounds;
 			map.fitBounds(bounds);
+			map.setZoom(map.getZoom() +1);
+			
+			// update autocomplete restrictions.
+			if (get('region').length >0) {
+				autocomplete.setComponentRestrictions({country : get('region')});
+			}
+			
 			
 			if (arr.length == 0) {
 				found.html('<p><em><strong>No results found</strong>.  Try widening your search area.</em></p>');
@@ -178,28 +207,31 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
             {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});				
 			});		
 		};
-
-		form.submit(function (e) {
-			$(this).find('.error-message').html('');
-			if (autocomplete.getPlace() === undefined){
-				$(this).find('.error-message').html('<div style="font-size: 0.8em; text-align: center;" class="alert alert-danger"><strong>Please Provide a valid address!</strong></div>');
-				e.preventDefault();
-				return false				
-			}
+		var getRequest = function(){
 			$('.find-a-distributor-loading-overlay').addClass('active');
-			e.preventDefault();
 			found.empty();
 			markers.forEach(function (marker) {	marker.setMap(null);	});
 			markers=[];
 			close_windows();
 			info_windows=[];
 			var radius=parseFloat(form.find('*[name="radius"]').val());
-			if (isNaN(radius)) return;
+			//if (isNaN(radius)) return;
 			var address=get('address');
 			var tags=form.find('*[name="tags"]').val();
-			if (address===null) return;
+			
+			// uses region first otherwise see what is in the address field;
+			address =  (address===null) ? get('region',true) : address;
+			if (address===null) {
+				// lets print out error
+				var error = '<div style="font-size: 0.8em; text-align: center;" class="alert alert-danger"><strong>Please povide a valid region or address!</strong></div>';
+				if (error !== null ) {
+					form.find('.error-message').html(error);
+				}				
+			}
 			var query='?action=fgms_distributor_radius&address='+encodeURIComponent(address)+'&radius='+encodeURIComponent(radius)+'&tags='+encodeURIComponent(tags);
-			var url=<?php	echo(json_encode(admin_url('admin-ajax.php')));	?>+query;
+			
+			var url=<?php	echo(json_encode(admin_url('admin-ajax.php')));	?>+query;			
+			
 			var xhr=$.ajax(url);
 			xhr.fail(function (xhr, text, e) {
 				console.warn(xhr.statusText);
@@ -210,7 +242,58 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 				$('.find-a-distributor-loading-overlay').removeClass('active');
 				var obj=JSON.parse(xhr.responseText);
 				update(obj);
-			});
+			});			
+		};
+		
+		var getGeocode = function() {
+			
+		}
+		form.find('select[name="region"]').on('change',function(e){
+			var region_val = $(this).find(":selected").val();			
+			if (region_val.length > 1){
+				//form.find('input[name="address"]').val(region_val);
+				form.trigger('submit')				
+			}
+			else {
+				autocomplete.setComponentRestrictions({country : ['ca','us','nz','au','gb']});
+			}
+			e.preventDefault();
+			return false;
+			
+		});
+		form.submit(function (e) {			
+			$(this).find('.error-message').html('');
+			e.preventDefault();
+			var error=null;
+			var address = get('address');
+			address = (address===null) ? get('region',true) : address;
+			
+			if (address === '' || address ===null){
+				error = '<div style="font-size: 0.8em; text-align: center;" class="alert alert-danger"><strong>Please Provide a valid address!</strong></div>';
+			}
+			var auto_place = autocomplete.getPlace();				
+			if (!auto_place || !auto_place.geometry){
+				var geocoder = new google.maps.Geocoder();
+				geocoder.geocode({address: address	},function(results){
+					if (results.length > 0 ){
+						results = results[0];
+						auto_viewport = (results.geometry.viewport === undefined) ? { 'contains' : function(pos){return false;}} : results.geometry.viewport;
+						getRequest();
+					}
+					else {
+						error = '<div style="font-size: 0.8em; text-align: center;" class="alert alert-danger"><strong>Error with Geocoder please try again!</strong></div>'
+					}
+				});	
+			}
+			else {
+				auto_viewport = (auto_place.geometry.viewport === undefined) ? { 'contains' : function(pos){return false;}} : auto_place.geometry.viewport;
+				getRequest();
+			}
+
+			if (error !== null ) {
+				form.find('.error-message').html(error);
+			}
+			return false;
 		});
 	})();
 
