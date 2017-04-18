@@ -7,6 +7,7 @@ namespace Fgms\Distributor;
 abstract class Controller
 {
     private $wp;
+    private $geo_stats = [];
     private $wpdb;
     private $geo;
     private $post_type;
@@ -23,6 +24,8 @@ abstract class Controller
     private $email;
     private $website;
     private $tags;
+    private $sell_vmac;
+    private $service_vmac;
     private $contact_meta_box_id;
     private $address_meta_box_id;
     private $save_action;
@@ -52,6 +55,8 @@ abstract class Controller
         $this->email=$prefix.'email';
         $this->website=$prefix.'website';
         $this->tags = $prefix.'tags';
+        $this->sell_vmac = $prefix.'sell-vmac';
+        $this->service_vmac = $prefix . 'service-vmac';
         $this->contact_meta_box_id=$prefix.'contact-meta-box';
         $this->address_meta_box_id=$prefix.'address-meta-box';
         $this->table_name=$wpdb->prefix.'fgms_distributor';
@@ -61,11 +66,20 @@ abstract class Controller
         $this->distributor_filter=$prefix.'distributor-filter';
         //  WordPress setup/attach hooks
         $this->wp->add_action('init',[$this,'registerPostType']);
-        $this->wp->add_action('save_post',function ($id, \WP_Post $post) {  $this->savePost($post); },10,2);
+        $this->wp->add_action('save_post',function ($id, \WP_Post $post) {
+          $this->savePost($post);
+          /*
+            wp_update_post([
+              'ID' => $post->ID,
+              'post_title' => $post->post_title,
+              'post_content' => $post->post_content
+            ]);*/
+        },10,2);
         $this->wp->add_action('before_delete_post',function ($id) { $this->deletePost($this->wp->get_post($id));    });
         $ajax=[$this,'ajax'];
         $this->wp->add_action('wp_ajax_'.$this->ajax_action,$ajax);
         $this->wp->add_action('wp_ajax_nopriv_'.$this->ajax_action,$ajax);
+        //$this->wp->add_action('admin_notices',[$this,'admin_notices'],1);
         $this->wp->add_action('plugins_loaded',[$this,'setup']);
         $this->wp->add_shortcode('find_a_distributor',[$this,'shortcode']);
     }
@@ -82,6 +96,18 @@ abstract class Controller
             'register_meta_box_cb' => [$this,'registerMetaBox']
         ]);
     }
+    public function admin_notices(){
+      if ((count($this->geo_stats) > 0) or true){
+        $str = '<div class="notice notice-warning is-dismissible">:<pre>';
+        $str .= print_R($this->geo_stats,true);
+        $str .= '</pre></div>';
+        echo $str;
+      } else {
+
+      }
+
+    }
+
     public function registerMetaBox(\WP_Post $post)
     {
         $this->wp->add_meta_box(
@@ -110,17 +136,32 @@ abstract class Controller
             require_once __DIR__.'/../../../allowed-tags.php';
             $value = $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true));
             $value_array = array_map('trim',explode(',',$value));
-            $output = '<div style="font-size: 0.8em; font-style: italic;margin:8px 0 4px;">'.$value .'</div>';
-            foreach ($allowed_tags as $tag){
+            $output = '<div style="font-size: 0.8em; font-style: italic;margin:8px 0 4px ;">'.$value .'</div>';
+            foreach ($allowed_tags as $tag=>$label){
                 $checked = in_array($tag,$value_array) ? ' CHECKED ' : '';
                 $output .= sprintf(
-                                '<div><label><input type="checkbox" value="%2$s" name="%1s[]" %3$s /> %2$s</label></div>',
+                                '<div><label><input type="checkbox" value="%2$s" name="%1s[]" %3$s /> %4$s</label></div>',
                                 $this->wp->esc_attr($name),
                                 $tag,
-                                $checked
+                                $checked,
+                                $label
                             );
             }
             $this->output($output);
+        }
+        else if (($title == 'Sell VMAC Product') OR ($title == 'Service VMAC Product')){
+          $value = $this->wp->esc_attr($this->wp->get_post_meta($post->ID,$name,true));
+          $checked = ($value == 'yes') ? ' CHECKED ' : '';
+          $output = '<div style="font-size: 1.1em; font-weight: bold;margin:12px 0 4px;  padding-top: 4px;;border-top: 1px solid #ccc;">';
+          $output .= sprintf(
+                          '<div><label><input type="checkbox" value="yes" name="%1s" %2$s /> %3$s</label></div>',
+                          $this->wp->esc_attr($name),
+                          $checked,
+                          $title
+                      );
+          $output .= '</div>';
+
+         $this->output($output);
         }
         else {
             $this->output(
@@ -133,6 +174,7 @@ abstract class Controller
             );
         }
     }
+
     public function outputAddressMetaBox(\WP_Post $post)
     {
         $this->metaBoxOutput($this->address,'Address',$post);
@@ -150,6 +192,8 @@ abstract class Controller
         $this->metaBoxOutput($this->email,'E-Mail',$post);
         $this->metaBoxOutput($this->website,'Website',$post);
         $this->metaBoxOutput($this->tags,'Tags',$post);
+        $this->metaBoxOutput($this->sell_vmac,'Sell VMAC Product',$post);
+        $this->metaBoxOutput($this->service_vmac,'Service VMAC Product',$post);
     }
     public function savePost(\WP_Post $post)
     {
@@ -165,19 +209,22 @@ abstract class Controller
             return $v;
         };
         $obj=(object)[
-            'lat' => null,
-            'lng' => null,
-            'address' => $update($this->address),
-            'city' => $update($this->city),
-            'territorial_unit' => $update($this->territorial_unit),
-            'country' => $update($this->country),
-            'first_name' => $update($this->first_name),
-            'last_name' => $update($this->last_name),
-            'phone' => $update($this->phone),
-            'fax' => $update($this->fax),
-            'email' => $update($this->email),
-            'website' => $update($this->website),
-            'tags' =>$update($this->tags)
+            'lat'               => null,
+            'lng'               => null,
+            'address'           => $update($this->address),
+            'city'              => $update($this->city),
+            'territorial_unit'  => $update($this->territorial_unit),
+            'posta_code'        => $update($this->postal_code),
+            'country'           => $update($this->country),
+            'first_name'        => $update($this->first_name),
+            'last_name'         => $update($this->last_name),
+            'phone'             => $update($this->phone),
+            'fax'               => $update($this->fax),
+            'email'             => $update($this->email),
+            'website'           => $update($this->website),
+            'tags'              => $update($this->tags),
+            'sell_vmac'         => $update($this->sell_vmac),
+            'service_vmac'      => $update($this->service_vmac)
         ];
         if (is_null($obj->address) || is_null($obj->city) || is_null($obj->country)) {
             $this->delete($id);
@@ -186,12 +233,16 @@ abstract class Controller
             if (!is_null($obj->territorial_unit)) $str=sprintf('%s, %s',$str,$obj->territorial_unit);
             $str=sprintf('%s, %s',$str,$obj->country);
             $l=$this->geo->forward($str);
-            $lat=$l[0];
-            $lng=$l[1];
-            $this->insert($id,$lat,$lng);
-            $obj->lat=$lat;
-            $obj->lng=$lng;
-        }
+            $this->geo_stats = $l;
+            if ((!empty($l[0])) and (!empty($l[1]))) {
+              $lat=$l[0];
+              $lng=$l[1];
+              $this->insert($id,$lat,$lng);
+              $obj->lat=$lat;
+              $obj->lng=$lng;
+            }
+          }
+
         $this->wp->do_action($this->save_action,$post,$obj);
     }
     public function deletePost(\WP_Post $post)
@@ -229,15 +280,23 @@ abstract class Controller
         foreach ( $results as $obj)
         {
             // filter logic for public site
+            // gets the request tags
             $get_tags = strtoupper($this->get('tags'));
+            // gets the tags that object has.
             $tags = array_map('trim',explode(',',strtoupper(trim($obj->tags,','))));
+
+            // add logic if has underhood automatically add underhood light.
+            if (in_array('UNDERHOOD', $tags) ){
+              $tags[] = strtoupper('UNDERHOOD LITE for Vans');
+            }
+            // check if in tags.
             if ( (in_array($get_tags,$tags)) or ($get_tags == '') ){
                 $arr[]=$this->getAjaxResponse($obj);
             }
             // if all fitler
-            if ($get_tags == 'ALL'){
+            elseif ($get_tags == 'ALL'){
                 $hasAllFlag = true;
-                foreach ($allowed_tags as $atag){
+                foreach ($allowed_tags as $atag=>$label){
                     if (! in_array(strtoupper($atag),$tags)){
                         $hasAllFlag = false;
                     }
@@ -295,7 +354,7 @@ abstract class Controller
         );
         $this->dbRaise();
     }
-    private function getRadius($lat, $lng, $radius=100, $km=true)
+    private function getRadius($lat, $lng, $radius=100, $km=false)
     {
         $magic=$km ? 6371 : 3959;
         $sql=sprintf(
@@ -339,22 +398,24 @@ abstract class Controller
         $post=$obj->post;
         $id=$post->ID;
         $obj=(object)[
-            'distance' => $obj->distance,
-            'lat' => $obj->lat,
-            'lng' => $obj->lng,
-            'inradius' => $obj->inradius,
-            'marker' => false,
-            'address' => $this->wp->get_post_meta($id,$this->address,true),
-            'city' => $this->wp->get_post_meta($id,$this->city,true),
-            'territorial_unit' => $this->wp->get_post_meta($id,$this->territorial_unit,true),
-            'country' => $this->wp->get_post_meta($id,$this->country,true),
-            'first_name' => $this->wp->get_post_meta($id,$this->first_name,true),
-            'last_name' => $this->wp->get_post_meta($id,$this->last_name,true),
-            'phone' => $this->wp->get_post_meta($id,$this->phone,true),
-            'fax' => $this->wp->get_post_meta($id,$this->fax,true),
-            'email' => $this->wp->get_post_meta($id,$this->email,true),
-            'website' => $this->wp->get_post_meta($id,$this->website,true),
-            'tags' => implode(' | ',explode(',',trim($obj->tags,',')))
+            'distance'          => $obj->distance,
+            'lat'               => $obj->lat,
+            'lng'               => $obj->lng,
+            'inradius'          => $obj->inradius,
+            'marker'            => false,
+            'address'           => $this->wp->get_post_meta($id,$this->address,true),
+            'city'              => $this->wp->get_post_meta($id,$this->city,true),
+            'territorial_unit'  => $this->wp->get_post_meta($id,$this->territorial_unit,true),
+            'country'           => $this->wp->get_post_meta($id,$this->country,true),
+            'first_name'        => $this->wp->get_post_meta($id,$this->first_name,true),
+            'last_name'         => $this->wp->get_post_meta($id,$this->last_name,true),
+            'phone'             => $this->wp->get_post_meta($id,$this->phone,true),
+            'fax'               => $this->wp->get_post_meta($id,$this->fax,true),
+            'email'             => $this->wp->get_post_meta($id,$this->email,true),
+            'website'           => $this->wp->get_post_meta($id,$this->website,true),
+            'sell_vmac'         => $this->wp->get_post_meta($id,$this->sell_vmac,true),
+            'service_vmac'      => $this->wp->get_post_meta($id,$this->service_vmac,true),
+            'tags'              => implode(' | ',explode(',',trim($obj->tags,',')))
         ];
         $obj->html=$this->wp->apply_filters($this->distributor_filter,'',$post,clone $obj);
         $obj->html=preg_replace('/^\\s+|\\s+$/u','',$obj->html);

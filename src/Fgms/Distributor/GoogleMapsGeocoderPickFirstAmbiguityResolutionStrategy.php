@@ -11,7 +11,10 @@ class GoogleMapsGeocoderPickFirstAmbiguityResolutionStrategy implements GoogleMa
 {
     public function resolve(array $arr)
     {
-        if (count($arr)===0) throw new \LogicException('Expected $arr to have at least one entry');
+        if (count($arr)===0) {
+          $arr = [0,0];
+        }//throw new \LogicException('Expected $arr to have at least one entry');
+
         return $arr[0];
     }
 }

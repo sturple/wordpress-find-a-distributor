@@ -9,6 +9,7 @@ class GoogleMapsGeocoder implements Geocoder
     private $api_key;
     private $decode_depth=10;
     private $client;
+    private $errors = [];
     private $resolver;
     /**
      *	Creates a new GoogleMapsGeocoder object which performs
@@ -47,7 +48,8 @@ class GoogleMapsGeocoder implements Geocoder
     }
     private function raise($msg, $code=0)
     {
-        throw new GoogleMapsGeocoderException($msg,$code);
+      $this->errors[] = [$code, $msg];
+        //throw new GoogleMapsGeocoderException($msg,$code);
     }
     private function raiseJson($json)
     {
@@ -67,11 +69,21 @@ class GoogleMapsGeocoder implements Geocoder
         if (!is_object($json)) $this->raise(sprintf('Root of JSON is not an object: %s',$body));
         if (!isset($json->results)) $this->raise(sprintf('No "results": %s',$body));
         $rs=$json->results;
+        // checking to ensure has results
         if (!is_array($rs)) $this->raise(sprintf('"results" not array: %s',$body));
-        if (count($rs)===0) $this->raise(sprintf('No results: %s',$body));
+        // no results
+        if (count($rs)===0) {
+          $this->raise(sprintf('No results: %s',$body));
+          return [0,0, $this->errors, $rs];
+        }
+
         $r=(count($rs)===1) ? $rs[0] : $this->resolver->resolve($rs);
-        if (!isset($r->geometry)) $this->raise(sprintf('No "results"."geometry":%s',$body));
+        if (!isset($r->geometry)) {
+          $this->raise(sprintf('No "results"."geometry":%s',$body));
+          return [0,0,$this->errors, $rs];
+        }
         $g=$r->geometry;
+
         if (!is_object($g)) $this->raise(sprintf('"results"."geometry" not an object: %s',$body));
         if (!isset($g->location)) $this->raise(sprintf('No "results"."geometry"."location": %s',$body));
         $l=$g->location;
@@ -82,6 +94,6 @@ class GoogleMapsGeocoder implements Geocoder
         if (!isset($l->lng)) $this->raise(sprintf('No "results"."geometry"."location"."lng": %s',$body));
         $lng=$l->lng;
         if (!(is_int($lng) || is_float($lng))) $this->raise(sprintf('"results"."geometry"."location"."lng" not a number: %s',$body));
-        return [$lat,$lng];
+        return [$lat,$lng, $this->errors, $rs];
     }
 }
