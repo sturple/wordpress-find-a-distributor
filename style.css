@@ -45,14 +45,14 @@
 	margin-bottom: 24px;
 	padding: 24px !important;
 	list-style: none !important;
-	
+
 }
 .found-distributors-results > li {
 	padding: 0 0 12px 0px !important;
 	border-bottom: 1px dotted #ccc;
-	margin-bottom: 12px;	
+	margin-bottom: 12px;
 	position: relative;
-	
+
 }
 .found-distributors-results > li:last-child {
 	border-bottom: 0px;
@@ -75,16 +75,16 @@
 	border: 1px solid #ccc;
 	padding: 2px 8px;
 	-moz-border-radius: 14px;
-	border-radius: 14px;	
+	border-radius: 14px;
 	top: -2px;
 	left: 0;
 }
 
 
-.found-distributor-address {	
+.found-distributor-address {
 	line-height: 1.2em;
 	padding-top: 4px;
-	
+
 }
 
 .found-distributor-street-address, .found-distributor-city {
@@ -99,7 +99,7 @@
 }
 .found-distributor-name{
 	display: inline;
-	font-size: 1em;	
+	font-size: 1em;
 }
 .found-distributor-contact {
 	font-size: 0.75em;
@@ -112,7 +112,7 @@
 	padding-top: 4px;
 }
 .found-distributor-email {
-	
+
 }
 .found-distributor-address, .found-distributor-web, .found-distributor-phone {
 	font-size: 0.75em;
@@ -121,7 +121,7 @@
 .found-distributor-tags {
 	padding-top: 4px;
 	font-size: 0.65em;
-	font-style: italic;	
+	font-style: italic;
 }
 
 .find-a-distributor-loading-overlay {
@@ -129,16 +129,17 @@
 	-o-transition: color 0.3s linear, background 0.3s linear;
 	-webkit-transition: color 0.3s linear, background 0.3s linear;
 	-moz-transition: color 0.3s linear, background 0.3s linear;
-	transition: color 0.3s linear, background 0.3s linear;	
+	transition: color 0.3s linear, background 0.3s linear;
+	display: none;
 }
 
 .find-a-distributor-loading-overlay.active{
 	position: fixed;
+	display: block;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-
 	color: #fff;
 	font-size: 1.4em;
 	z-index: 9999999;
@@ -147,12 +148,10 @@
 	-o-transition: color 0.3s linear, background 0.3s linear;
 	-webkit-transition: color 0.3s linear, background 0.3s linear;
 	-moz-transition: color 0.3s linear, background 0.3s linear;
-	transition: color 0.3s linear, background 0.3s linear;		
+	transition: color 0.3s linear, background 0.3s linear;
 }
 
-.find-a-distributor-loading-overlay.active:before {
-	content: 'Finding Results...';
+.find-a-distributor-loading-overlay.active > * {
 	position: relative;
-	top: 50%;
-	
+	top: 50%;	
 }
