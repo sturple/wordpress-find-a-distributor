@@ -99,7 +99,6 @@ abstract class Controller
     public function admin_notices(){
       if ((count($this->geo_stats) > 0) or true){
         $str = '<div class="notice notice-warning is-dismissible">:<pre>';
-        $str .= print_R($this->geo_stats,true);
         $str .= '</pre></div>';
         echo $str;
       } else {

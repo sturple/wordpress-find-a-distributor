@@ -117,10 +117,8 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 					++found_count;
 				}
 
-				//console.log('finding .. .'+ found_count);
 				$('.find-a-distributor-loading-overlay > div > div').text('Found '+ found_count + ' results.')
-				//if (bounds===null) bounds=new google.maps.LatLngBounds();
-				//bounds.extend(pos);
+
 				var marker=new MarkerWithLabel({
 					position: pos,
 					draggable: false,
@@ -259,7 +257,6 @@ function MarkerLabel_(e,t,n){this.marker_=e;this.handCursorURL_=e.handCursorURL;
 			});
 			xhr.done(function (data, text, xhr) {
 				var obj=JSON.parse(xhr.responseText);
-				console.log('updating');
 				update(obj);
 			});
 		};
