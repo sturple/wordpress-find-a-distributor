@@ -3,7 +3,7 @@
  * Plugin Name: Wordpress Find a Distributor
  * Plugin URI: https://github.com/sturple/wordpress-find-a-distributor/
  * Description: Wordpress plugin to add custom post type distributor with shortcode interface to find a distributor with google map
- * Version: 0.0.3
+ * Version: 0.0.4
  * Author: Shawn Turple / Robert Leahy
  * Author URI: http://turple.ca
  * License: GPL-3.0
@@ -23,12 +23,10 @@ call_user_func(function () {
     if (is_null($where)) throw new \RuntimeException('Could not find autoloader');
 
     require_once $where;
-
-
 });
+
 call_user_func(function () {
     global $wpdb;
-
     $prefix='fgms-distributor-';
     $domain='fgms-distributor';
     $wp=new \Fgms\WordPress\WordPressImpl();
