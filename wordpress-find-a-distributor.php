@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/sturple/wordpress-find-a-distributor/
  * Description: Wordpress plugin to add custom post type distributor with shortcode interface to find a distributor with google map
  * Version: 0.0.5
- * Author: Shawn Turple / Robert Leahy
+ * Author: Shawn Turple
  * Author URI: http://turple.ca
  * License: GPL-3.0
  */
