@@ -33,8 +33,6 @@
 	list-style: none;
 }
 
-
-
 .found-distributors-results {
 
 	counter-reset: found-distributors-counter;
@@ -80,11 +78,9 @@
 	left: 0;
 }
 
-
 .found-distributor-address {
 	line-height: 1.2em;
 	padding-top: 4px;
-
 }
 
 .found-distributor-street-address, .found-distributor-city {
@@ -101,6 +97,7 @@
 	display: inline;
 	font-size: 1em;
 }
+
 .found-distributor-contact {
 	font-size: 0.75em;
 	font-weight: bold;
@@ -153,5 +150,5 @@
 
 .find-a-distributor-loading-overlay.active > * {
 	position: relative;
-	top: 50%;	
+	top: 50%;
 }
