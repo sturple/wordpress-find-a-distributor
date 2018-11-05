@@ -1,5 +1,5 @@
 
-# feature test1
+# feature test2
     * this is adding to test1, so this should create a conflict
     * adding another line (oh no :())
 
